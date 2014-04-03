@@ -12,23 +12,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import logging
-import os
-
-from flask import Flask, json
-
-CONFIG_FILE = os.environ.get('REREST_CONFIG', 'settings.json')
-
-app = Flask(__name__)
-app.config.update(json.load(open(CONFIG_FILE, 'r')))
-
-log_handler = logging.FileHandler(app.config.get('LOGFILE', 'rerest.log'))
-log_level = app.config.get('LOGLEVEL', None)
-if not log_level:
-    log_level = 'INFO'
-log_handler.setLevel(logging.getLevelName(log_level))
-log_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(message)s'))
-app.logger.handlers = [log_handler]
-
-import rerest.views
+"""
+rerest package.
+"""

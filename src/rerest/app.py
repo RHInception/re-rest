@@ -16,12 +16,28 @@
 The Flask App.
 """
 
-from flask import Flask
+import os
+import logging
+
+from flask import Flask, json
 
 from rerest.views import make_routes
 
 
+CONFIG_FILE = os.environ.get('REREST_CONFIG', 'settings.json')
+
 app = Flask('rerest')
+app.config.update(json.load(open(CONFIG_FILE, 'r')))
+
+log_handler = logging.FileHandler(app.config.get('LOGFILE', 'rerest.log'))
+log_level = app.config.get('LOGLEVEL', None)
+if not log_level:
+    log_level = 'INFO'
+log_handler.setLevel(logging.getLevelName(log_level))
+log_handler.setFormatter(logging.Formatter(
+    '%(asctime)s - %(levelname)s - %(message)s'))
+app.logger.handlers = [log_handler]
+
 make_routes(app)
 
 
