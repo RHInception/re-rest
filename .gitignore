@@ -1,6 +1,7 @@
 *.py[cod]
 tox/
 rpm-build/
+*.log
 
 # C extensions
 *.so
