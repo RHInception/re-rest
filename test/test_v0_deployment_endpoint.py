@@ -16,13 +16,25 @@
 Unittests.
 """
 
-import unittest
+from flask import request
 
-from rerest.app import app
+from . import TestCase, unittest
 
 
-class TestCase(unittest.TestCase):
+class TestV0DeploymentEndpoint(TestCase):
 
-    def setUp(self):
-        self.client = app.test_client()
-        self.test_client = app.test_client
+    def test_create_new_deployment(self):
+        """
+        Test creating new deployment requests.
+        """
+        # Check with good input
+        with self.test_client() as c:
+            response = c.post('/api/v0/test/deployment/')
+            assert request.view_args['project'] == 'test'
+            assert response.status_code == 201
+            assert response.mimetype == 'application/json'
+
+        # Check with bad input
+        with self.test_client() as c:
+            response = c.post('/api/v0//deployment/')
+            assert response.status_code == 404

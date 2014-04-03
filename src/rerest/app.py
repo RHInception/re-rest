@@ -18,4 +18,12 @@ The Flask App.
 
 from flask import Flask
 
+from rerest.views import make_routes
+
+
 app = Flask('rerest')
+make_routes(app)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

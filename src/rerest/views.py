@@ -13,16 +13,29 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unittests.
+Views.
 """
 
-import unittest
+from flask import jsonify
 
-from rerest.app import app
+from flask.views import MethodView
 
 
-class TestCase(unittest.TestCase):
+class V0DeploymentAPI(MethodView):
 
-    def setUp(self):
-        self.client = app.test_client()
-        self.test_client = app.test_client
+    methods = ['POST']
+
+    def post(self, project):
+        """
+        Creates a new deployment.
+        """
+        return jsonify({'status': 'created', 'id': 0}), 201
+
+
+def make_routes(app):
+    """
+    Makes and appends routes to app.
+    """
+    deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
+    app.add_url_rule('/api/v0/<project>/deployment/',
+                     view_func=deployment_api_view, methods=['POST', ])
