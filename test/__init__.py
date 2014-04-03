@@ -16,7 +16,11 @@
 Unittests.
 """
 
+import os
+
 import unittest
+
+os.environ['REREST_CONFIG'] = 'example-settings.json'
 
 from rerest.app import app
 
