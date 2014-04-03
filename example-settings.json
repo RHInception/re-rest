@@ -1,0 +1,6 @@
+{
+    "DEBUG": true,
+    "PREFERRED_URL_SCHEME": "https",
+    "LOGGER_NAME": "rerest",
+    "LOGFILE": "rerest.log",
+}
