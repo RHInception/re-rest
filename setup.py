@@ -34,7 +34,7 @@ setup(
     },
     packages=find_packages('src'),
     install_requires=[
-        'flask>=0.9',
+        'flask>=0.10',
     ],
     classifiers=[
         ('License :: OSI Approved :: GNU Affero General Public '
