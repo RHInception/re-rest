@@ -1,0 +1,10 @@
+language: python
+python:
+    - "2.7"
+install:
+    - "pip install Flask pep8 nose coverage"
+script:
+    - "pep8 src/"
+    - "nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest test/"
+notifications:
+    email: false
