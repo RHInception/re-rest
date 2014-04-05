@@ -2,7 +2,15 @@ language: python
 python:
     - "2.7"
 install:
-    - "pip install Flask pep8 nose coverage"
+    - "pip install Flask pika pep8 nose coverage"
+services:
+  - rabbitmq
+before_script:
+    - "wget http://hg.rabbitmq.com/rabbitmq-management/raw-file/rabbitmq_v3_3_0/bin/rabbitmqadmin"
+    - "chmod a+x rabbitmqadmin"
+    - "./rabbitmqadmin declare exchange name=releaseengine type=topic"
+    - "./rabbitmqadmin declare queue name=test durable=false"
+    - "./rabbitmqadmin declare binding source=releaseengine destination=test routing_key=job.create"
 script:
     - "pep8 src/"
     - "nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest test/"

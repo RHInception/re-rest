@@ -35,6 +35,7 @@ setup(
     packages=find_packages('src'),
     install_requires=[
         'flask>=0.10',
+        'pika=>0.9.12',
     ],
     classifiers=[
         ('License :: OSI Approved :: GNU Affero General Public '
