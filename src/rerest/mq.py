@@ -38,7 +38,7 @@ def start_job():
         json.dumps({'some': 'info'}), properties=properties)
 
     for method_frame, header_frame, body in channel.consume(
-            tmp_q.method.queue):
+            tmp_q.method.queue, exclusive=True):
         try:
             job_id = json.loads(body)['id']
             channel.basic_ack(method_frame.delivery_tag)
