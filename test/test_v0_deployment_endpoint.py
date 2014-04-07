@@ -33,15 +33,13 @@ mq.JobCreator.get_confirmation = mock.MagicMock(
 
 class TestV0DeploymentEndpoint(TestCase):
 
-
-
     def test_create_new_deployment(self):
         """
         Test creating new deployment requests.
         """
         # Check with good input
         with self.test_client() as c:
-            response = c.post('/api/v0/test/deployment/')
+            response = c.put('/api/v0/test/deployment/')
             assert request.view_args['project'] == 'test'
             assert response.status_code == 201
             assert response.mimetype == 'application/json'

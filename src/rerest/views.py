@@ -27,7 +27,7 @@ class V0DeploymentAPI(MethodView):
 
     methods = ['POST']
 
-    def post(self, project):
+    def put(self, project):
         """
         Creates a new deployment.
         """
@@ -48,4 +48,4 @@ def make_routes(app):
     """
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
     app.add_url_rule('/api/v0/<project>/deployment/',
-                     view_func=deployment_api_view, methods=['POST', ])
+                     view_func=deployment_api_view, methods=['PUT', ])
