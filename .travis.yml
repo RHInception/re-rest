@@ -2,7 +2,7 @@ language: python
 python:
     - "2.7"
 install:
-    - "pip install Flask pika pep8 nose coverage"
+    - "pip install Flask pika pep8 nose coverage mock"
 services:
   - rabbitmq
 before_script:
