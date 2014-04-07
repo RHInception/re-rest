@@ -4,11 +4,18 @@ Simple REST Api for our new release engine hotness.
 [![Build Status](https://api.travis-ci.org/RHInception/re-rest.png)](https://travis-ci.org/RHInception/re-rest/)
 
 ## Running From Source
+### With Flask
 ```bash
 $ PYTHONPATH=src/ REREST_CONFIG=example-settings.json python src/rerest/app.py
 ```
 
+### With gunicorn
+```bash
+$ PYTHONPATH=`pwd`/src gunicorn -e REREST_CONFIG=example-settings.json --access-logfile access.log --error-logfile=error.log rerest.app:app
+```
+
 ## Unittests
+Use *nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest test/* from the main directory to execute unittests.
 
 ## Configuration
 
