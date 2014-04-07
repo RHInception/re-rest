@@ -13,6 +13,6 @@ before_script:
     - "./rabbitmqadmin declare binding source=releaseengine destination=test routing_key=job.create"
 script:
     - "pep8 src/"
-    - "nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest test/"
+    - "nosetests -v --with-cover --cover-min-percentage=70 --cover-package=rerest test/"
 notifications:
     email: false
