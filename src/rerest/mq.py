@@ -43,6 +43,9 @@ class JobCreator(object):
         self._channel = connection.channel()
         # tmp_q is the queue which we will listen on for a response
         self._tmp_q = self._channel.queue_declare(auto_delete=True)
+        self._channel.queue_bind(
+            queue=self._tmp_q.method.queue, exchange='re',
+            routing_key=self._tmp_q.method.queue)
 
     def create_job(self, project, exchange='re', topic='job.create'):
         # Set up the reply-to to our temporary queue

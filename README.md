@@ -81,7 +81,7 @@ $ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:500
 ## What's Happening
 
 1. User requests a new job via the REST endpoint
-2. The REST server creates a temporary response queue.
+2. The REST server creates a temporary response queue and binds it to the exchange with the same name.
 3. The REST server sends a message on the bus to exchange *releaseengine* on the topic *job.create*.
 4. The REST server waits on the temporary response queue for a response.
 5. Once a response is returned the REST service responds to the user with the job id.
