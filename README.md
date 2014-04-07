@@ -18,6 +18,40 @@ $ PYTHONPATH=`pwd`/src gunicorn -e REREST_CONFIG=example-settings.json --access-
 Use *nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest test/* from the main directory to execute unittests.
 
 ## Configuration
+Configuration of the server is done in JSON and is by default kept in the current directories settings.json file.
+
+You can override the location by setting `REREST_CONFIG` environment variable.
+
+| Name     | Type | Parent | Value                                      |
+|----------|------|--------|--------------------------------------------|
+| LOGFILE  | str  | None   | File name for the application level log    |
+| LOGLEVEL | str  | None   | DEBUG, INFO (default), WARN, FATAL         |
+| MQ       | dict | None   | Where all of the MQ connection settins are |
+| SERVER   | str  | MQ     | Hostname or IP of the server               |
+| PORT     | int  | MQ     | Port to connect on                         |
+| USER     | str  | MQ     | Username to connect with                   |
+| PASSWORD | str  | MQ     | Password to authenticate with              |
+| VHOST    | str  | MQ     | vhost on the server to utilize             |
+
+Further configuration items can be found at http://flask.pocoo.org/docs/config/#builtin-configuration-values
+
+### Example Config
+
+```json
+{
+    "DEBUG": true,
+    "PREFERRED_URL_SCHEME": "https",
+    "LOGGER_NAME": "rerest",
+    "LOGFILE": "rerest.log",
+    "MQ": {
+        "SERVER": "127.0.0.1",
+        "PORT": 5672,
+        "USER": "guest",
+        "PASSWORD": "guest",
+        "VHOST": "/"
+    }
+}
+```
 
 ## URLs
 ### /api/v0/*$PROJECT*/deployment/
