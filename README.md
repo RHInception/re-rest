@@ -62,6 +62,21 @@ Further configuration items can be found at http://flask.pocoo.org/docs/config/#
 * **Input Format**: None
 * **Inputs**: None
 
+## Depoloyment
+
+### Apache with mod\_wsgi
+mod_wsgi can be used with Apache to mount rerest. Example mod_wsgi files are located in contrib/mod_wsgi.
+
+* rerest.conf: The mod_wsgi configuration file. This should be modified and placed in /etc/httpd/conf.d/.
+* rerest.wsgi: The WSGI file that mod_wsgi will use. This should be modified and placed in the location noted in rerest.conf
+
+### Gunicorn
+Gunicorn (http://gunicorn.org/) is a popular open source Python WSGI server. It's still recommend to use Apache (or another web server) to handle auth before gunicorn since gunicorn itself is not set up for it.
+
+```
+$ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:5000 --access-logfile=/your/access.log --error-logfile=/your/error.log -e REREST_CONFIG=/full/path/to/settings.json rerest.app:app
+```
+
 
 ## What's Happening
 
