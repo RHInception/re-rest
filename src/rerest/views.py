@@ -16,7 +16,7 @@
 Views.
 """
 
-from flask import jsonify
+from flask import current_app, jsonify
 
 from flask.views import MethodView
 
@@ -32,8 +32,15 @@ class V0DeploymentAPI(MethodView):
         Creates a new deployment.
         """
         try:
-            jc = mq.JobCreator()
-            jc.create_job()
+            mq_data = current_app.config['MQ']
+            jc = mq.JobCreator(
+                server=mq_data['SERVER'],
+                port=int(mq_data['PORT']),
+                user=mq_data['USER'],
+                password=mq_data['PASSWORD'],
+                vhost=mq_data['VHOST']
+            )
+            jc.create_job(project)
             confirmation_id = jc.get_confirmation()
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
         except Exception, ex:

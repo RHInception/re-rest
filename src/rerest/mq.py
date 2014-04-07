@@ -23,24 +23,32 @@ from flask import json
 
 class JobCreator(object):
 
-    def __init__(self):
-        connection = pika.BlockingConnection()
+    def __init__(self, server, port, user, password, vhost):
+        creds = pika.PlainCredentials(user, password)
+        # TODO: add ssl=True
+        params = pika.ConnectionParameters(
+            server,
+            port,
+            vhost,
+            creds,
+        )
+        connection = pika.BlockingConnection(params)
         self._channel = connection.channel()
         # tmp_q is the queue which we will listen on for a response
         self._tmp_q = self._channel.queue_declare(auto_delete=True)
 
-    def create_job(self, exchange='re', topic='job.create'):
+    def create_job(self, project, exchange='re', topic='job.create'):
         # Set up the reply-to to our temporary queue
         properties = pika.spec.BasicProperties()
         properties.reply_to = self._tmp_q.method.queue
         # Send the message
         self._channel.basic_publish(
             exchange, topic,
-            json.dumps({'some': 'info'}), properties=properties)
+            json.dumps({'project': project}), properties=properties)
 
     def get_confirmation(self):
         for method_frame, header_frame, body in self._channel.consume(
-                self._tmp_q.method.queue, exclusive=True):
+                self._tmp_q.method.queue):
             try:
                 job_id = json.loads(body)['id']
                 self._channel.basic_ack(method_frame.delivery_tag)

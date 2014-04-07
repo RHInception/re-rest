@@ -2,5 +2,12 @@
     "DEBUG": true,
     "PREFERRED_URL_SCHEME": "https",
     "LOGGER_NAME": "rerest",
-    "LOGFILE": "rerest.log"
+    "LOGFILE": "rerest.log",
+    "MQ": {
+        "SERVER": "127.0.0.1",
+        "PORT": 5672,
+        "USER": "guest",
+        "PASSWORD": "guest",
+        "VHOST": "/"
+    }
 }

@@ -40,7 +40,7 @@ class TestJobCreator(TestCase):
         """
         Test JobCreator is created as expected.
         """
-        jc = mq.JobCreator()
+        jc = mq.JobCreator('server', 5672, 'user', 'pass', 'vhost')
         print mq.pika.BlockingConnection.call_count
         assert mq.pika.BlockingConnection.call_count == 1
         assert jc._channel.queue_declare.call_count == 1
@@ -50,12 +50,13 @@ class TestJobCreator(TestCase):
         """
         Test start_job.
         """
-        jc = mq.JobCreator()
-        assert jc.create_job() is None  # No return value
+        jc = mq.JobCreator('server', 5672, 'user', 'pass', 'vhost')
+        assert jc.create_job('project') is None  # No return value
         assert jc._channel.basic_publish.call_count == 1
         assert jc._channel.basic_publish.call_args[0][0] == 're'
         assert jc._channel.basic_publish.call_args[0][1] == 'job.create'
-        assert jc._channel.basic_publish.call_args[0][2] == '{"some": "info"}'
+        assert jc._channel.basic_publish.call_args[0][2] == (
+            '{"project": "project"}')
 
     def test_get_confirmation(self):
         """
@@ -64,8 +65,8 @@ class TestJobCreator(TestCase):
         #FIXME: Some mocks are hanging around messing with the results here
         #       Fix soon.
 
-        jc = mq.JobCreator()
-        jc.create_job()
+        jc = mq.JobCreator('server', 5672, 'user', 'pass', 'vhost')
+        jc.create_job('project')
         jc._channel.consume = mock.MagicMock()
         # Perfect world scenario
         jc._channel.consume.return_value = [[
