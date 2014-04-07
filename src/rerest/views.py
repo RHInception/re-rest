@@ -20,6 +20,8 @@ from flask import jsonify
 
 from flask.views import MethodView
 
+from rerest import mq
+
 
 class V0DeploymentAPI(MethodView):
 
@@ -29,7 +31,15 @@ class V0DeploymentAPI(MethodView):
         """
         Creates a new deployment.
         """
-        return jsonify({'status': 'created', 'id': 0}), 201
+        try:
+            jc = mq.JobCreator()
+            jc.create_job()
+            confirmation_id = jc.get_confirmation()
+            return jsonify({'status': 'created', 'id': confirmation_id}), 201
+        except Exception, ex:
+            # TODO: logging
+            print type(ex), ex
+            return jsonify({'status': 'error'}), 500
 
 
 def make_routes(app):

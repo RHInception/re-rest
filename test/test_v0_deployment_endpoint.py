@@ -16,12 +16,24 @@
 Unittests.
 """
 
-from flask import request
+import pika
+import mock
+
+from flask import request, json
 
 from . import TestCase, unittest
 
+from rerest import mq
+
+# Mocks
+mq.pika = mock.Mock(pika)
+mq.JobCreator.get_confirmation = mock.MagicMock(
+    mq.JobCreator.get_confirmation, return_value=1)
+
 
 class TestV0DeploymentEndpoint(TestCase):
+
+
 
     def test_create_new_deployment(self):
         """
@@ -33,6 +45,9 @@ class TestV0DeploymentEndpoint(TestCase):
             assert request.view_args['project'] == 'test'
             assert response.status_code == 201
             assert response.mimetype == 'application/json'
+            result = json.loads(response.data)
+            assert result['status'] == 'created'
+            assert result['id'] == 1
 
         # Check with bad input
         with self.test_client() as c:
