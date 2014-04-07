@@ -54,7 +54,8 @@ class JobCreator(object):
 
         self.logger.info('Creating a job for project %s using exchange '
                          '%s and topic %s. Temp queue name is %s' % (
-                         project, exchange, topic, self._tmp_q.method.queue))
+                             project, exchange, topic,
+                             self._tmp_q.method.queue))
 
         # Send the message
         self._channel.basic_publish(
