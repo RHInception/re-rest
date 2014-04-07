@@ -41,5 +41,5 @@ app.logger.handlers = [log_handler]
 make_routes(app)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     app.run(debug=True)
