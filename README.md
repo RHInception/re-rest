@@ -82,7 +82,9 @@ $ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:500
 
 1. User requests a new job via the REST endpoint
 2. The REST server creates a temporary response queue and binds it to the exchange with the same name.
-3. The REST server sends a message on the bus to exchange *releaseengine* on the topic *job.create*.
-4. The REST server waits on the temporary response queue for a response.
-5. Once a response is returned the REST service responds to the user with the job id.
-6. The temporary response queue then is automatically deleted by the bus.
+3. The REST server creates a message with a reply_to of the temporary response queue's topic.
+4. The REST server sends the message to the bus on exchange *re* and topic *job.create*. Body Example: ```{"project": "nameofproject"}```
+5. The REST server waits on the temporary response queue for a response.
+6. Once a response is returned the REST service loads the body into a json structure and pulls out the id parameter.
+7. The REST service then responds to the user with the job id.
+8. The temporary response queue then is automatically deleted by the bus.
