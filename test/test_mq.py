@@ -25,15 +25,55 @@ from rerest import mq
 
 from . import TestCase, unittest
 
-# Basic mocking
-mq.pika = mock.MagicMock(pika)
+mq.pika = mock.Mock(pika)
 
 
-class TestV0DeploymentEndpoint(TestCase):
+class TestJobCreator(TestCase):
 
-    def test_start_job(self):
+    def tearDown(self):
+        """
+        Reset the mock.
+        """
+        mq.pika.BlockingConnection.reset_mock()
+
+    def test_create_object(self):
+        """
+        Test JobCreator is created as expected.
+        """
+        jc = mq.JobCreator()
+        print mq.pika.BlockingConnection.call_count
+        assert mq.pika.BlockingConnection.call_count == 1
+        assert jc._channel.queue_declare.call_count == 1
+        jc._channel.queue_declare.assert_called_with(auto_delete=True)
+
+    def test_create_job(self):
         """
         Test start_job.
         """
-        mq.start_job()
-        assert mq.pika.BlockingConnection.call_count == 1
+        jc = mq.JobCreator()
+        assert jc.create_job() is None  # No return value
+        assert jc._channel.basic_publish.call_count == 1
+        assert jc._channel.basic_publish.call_args[0][0] == 're'
+        assert jc._channel.basic_publish.call_args[0][1] == 'job.create'
+        assert jc._channel.basic_publish.call_args[0][2] == '{"some": "info"}'
+
+    def test_get_confirmation(self):
+        """
+        Test confirmation response.
+        """
+        jc = mq.JobCreator()
+        jc.create_job()
+        jc._channel.consume = mock.MagicMock()
+        # Perfect world scenario
+        jc._channel.consume.return_value = [[
+            mock.Mock(delivery_tag=1),
+            mock.Mock(delivery_tag=1),
+            '{"id": 10}']]
+        assert jc.get_confirmation() == 10
+
+        # Not so perfect world scenario
+        jc._channel.consume.return_value = [[
+            mock.Mock(delivery_tag=1),
+            mock.Mock(delivery_tag=1),
+            'not json data so it will error']]
+        self.assertRaises(Exception, jc.get_confirmation)

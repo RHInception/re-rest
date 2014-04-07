@@ -21,30 +21,32 @@ import pika
 from flask import json
 
 
-def start_job():
-    """
-    Starts a job via the mq.
-    """
-    connection = pika.BlockingConnection()
-    channel = connection.channel()
-    # tmp_q is the queue which we will listen on for a response
-    tmp_q = channel.queue_declare(auto_delete=True)
-    # Set up the reply-to to our temporary queue
-    properties = pika.spec.BasicProperties()
-    properties.reply_to = tmp_q.method.queue
-    # Send the message
-    channel.basic_publish(
-        'releaseengine', 'job.create',
-        json.dumps({'some': 'info'}), properties=properties)
+class JobCreator(object):
 
-    for method_frame, header_frame, body in channel.consume(
-            tmp_q.method.queue, exclusive=True):
-        try:
-            job_id = json.loads(body)['id']
-            channel.basic_ack(method_frame.delivery_tag)
-            return job_id
-        except Exception, ex:
-            channel.basic_reject(method_frame.delivery_tag)
-            raise ex
-        finally:
-            channel.close()
+    def __init__(self):
+        connection = pika.BlockingConnection()
+        self._channel = connection.channel()
+        # tmp_q is the queue which we will listen on for a response
+        self._tmp_q = self._channel.queue_declare(auto_delete=True)
+
+    def create_job(self, exchange='re', topic='job.create'):
+        # Set up the reply-to to our temporary queue
+        properties = pika.spec.BasicProperties()
+        properties.reply_to = self._tmp_q.method.queue
+        # Send the message
+        self._channel.basic_publish(
+            exchange, topic,
+            json.dumps({'some': 'info'}), properties=properties)
+
+    def get_confirmation(self):
+        for method_frame, header_frame, body in self._channel.consume(
+                self._tmp_q.method.queue, exclusive=True):
+            try:
+                job_id = json.loads(body)['id']
+                self._channel.basic_ack(method_frame.delivery_tag)
+                return job_id
+            except Exception, ex:
+                self._channel.basic_reject(method_frame.delivery_tag)
+                raise ex
+            finally:
+                self._channel.close()
