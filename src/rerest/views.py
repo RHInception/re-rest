@@ -38,14 +38,19 @@ class V0DeploymentAPI(MethodView):
                 port=int(mq_data['PORT']),
                 user=mq_data['USER'],
                 password=mq_data['PASSWORD'],
-                vhost=mq_data['VHOST']
+                vhost=mq_data['VHOST'],
+                logger=current_app.logger
             )
+            current_app.logger.info('Creating job for project %s' % project)
             jc.create_job(project)
             confirmation_id = jc.get_confirmation()
+            current_app.logger.debug('Confirmation for %s is %s' % (
+                project, confirmation_id))
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
         except Exception, ex:
             # TODO: logging
-            print type(ex), ex
+            current_app.logger.error('Error creating job for %s. %s: %s' % (
+                project, type(ex), ex))
             return jsonify({'status': 'error'}), 500
 
 
@@ -56,3 +61,4 @@ def make_routes(app):
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
     app.add_url_rule('/api/v0/<project>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
+    app.logger.info('Added v0 routes.')
