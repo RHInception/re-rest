@@ -1,5 +1,5 @@
 # RE-REST
-Simple REST Api for our new release engine hotness.
+Simple REST Api for our new [release engine hotness](https://github.com/RHInception/?query=re-)
 
 [![Build Status](https://api.travis-ci.org/RHInception/re-rest.png)](https://travis-ci.org/RHInception/re-rest/)
 
