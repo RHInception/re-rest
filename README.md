@@ -78,6 +78,15 @@ $ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:500
 ```
 
 
+### Platform Gotcha's
+
+#### RHEL 6
+You may need to add the following to your PYTHONPATH to be able to use Jinja2:
+
+```
+/usr/lib/python2.6/site-packages/Jinja2-2.6-py2.6.egg
+```
+
 ## What's Happening
 
 1. User requests a new job via the REST endpoint
