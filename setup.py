@@ -19,8 +19,11 @@ Build script.
 
 import os.path
 
+from pip.req import parse_requirements
 from setuptools import setup, find_packages
 
+install_reqs = parse_requirements('requirements.txt')
+reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
     name='rerest',
@@ -32,11 +35,8 @@ setup(
     package_dir={
         'rerest': os.path.join('src', 'rerest')
     },
+    install_requires=reqs,
     packages=find_packages('src'),
-    install_requires=[
-        'flask>=0.10',
-        'pika=>0.9.12',
-    ],
     classifiers=[
         ('License :: OSI Approved :: GNU Affero General Public '
          'License v3 or later (AGPLv3+)'),
