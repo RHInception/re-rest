@@ -44,11 +44,16 @@ class V0DeploymentAPI(MethodView):
             current_app.logger.info('Creating job for project %s' % project)
             jc.create_job(project)
             confirmation_id = jc.get_confirmation()
+            if confirmation_id is None:
+                current_app.logger.debug(
+                    'Confirmation for %s was none meaning the '
+                    'project does not exist.' % project)
+                return jsonify({'status': 'project not found'}), 404
+
             current_app.logger.debug('Confirmation for %s is %s' % (
                 project, confirmation_id))
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
         except Exception, ex:
-            # TODO: logging
             current_app.logger.error('Error creating job for %s. %s: %s' % (
                 project, type(ex), ex))
             return jsonify({'status': 'error'}), 500
