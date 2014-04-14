@@ -35,9 +35,10 @@ if not log_level:
     log_level = 'INFO'
 log_handler.setLevel(logging.getLevelName(log_level))
 log_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(message)s'))
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 app.logger.handlers = [log_handler]
-
+app.logger.debug('Logger initialized')
+app.logger.info('Using config from %s' % CONFIG_FILE)
 make_routes(app)
 
 

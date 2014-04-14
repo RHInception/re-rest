@@ -15,6 +15,7 @@
 """
 Views.
 """
+import uuid
 
 from flask import current_app, jsonify
 
@@ -32,6 +33,7 @@ class V0DeploymentAPI(MethodView):
         Creates a new deployment.
         """
         try:
+            request_id = str(uuid.uuid4())
             mq_data = current_app.config['MQ']
             jc = mq.JobCreator(
                 server=mq_data['SERVER'],
@@ -39,7 +41,8 @@ class V0DeploymentAPI(MethodView):
                 user=mq_data['USER'],
                 password=mq_data['PASSWORD'],
                 vhost=mq_data['VHOST'],
-                logger=current_app.logger
+                logger=current_app.logger,
+                request_id=request_id
             )
             current_app.logger.info('Creating job for project %s' % project)
             jc.create_job(project)
@@ -47,15 +50,27 @@ class V0DeploymentAPI(MethodView):
             if confirmation_id is None:
                 current_app.logger.debug(
                     'Confirmation for %s was none meaning the '
-                    'project does not exist.' % project)
+                    'project does not exist. Request id: %s' % (
+                        project, request_id))
                 return jsonify({'status': 'project not found'}), 404
 
-            current_app.logger.debug('Confirmation for %s is %s' % (
-                project, confirmation_id))
+            current_app.logger.debug(
+                'Confirmation for %s is %s. Request id: %s' % (
+                project, confirmation_id, request_id))
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
+        except KeyError, kex:
+            current_app.logger.error(
+                'Error creating job for %s. Missing '
+                'something in the MQ config section? %s: %s. '
+                'Request id: %s' % (
+                    project, type(kex).__name__, kex, request_id))
         except Exception, ex:
-            current_app.logger.error('Error creating job for %s. %s: %s' % (
-                project, type(ex), ex))
+            # As there is a lot of other possible network related exceptions
+            # this catch all seems to make sense.
+            current_app.logger.error(
+                'Error creating job for %s. %s: %s. '
+                'Request id: %s' % (
+                project, type(ex).__name__, ex, request_id))
             return jsonify({'status': 'error'}), 500
 
 

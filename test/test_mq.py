@@ -42,7 +42,7 @@ class TestJobCreator(TestCase):
         Test JobCreator is created as expected.
         """
         jc = mq.JobCreator(
-            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger())
+            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
         print mq.pika.BlockingConnection.call_count
         assert mq.pika.BlockingConnection.call_count == 1
         assert jc._channel.queue_declare.call_count == 1
@@ -53,7 +53,7 @@ class TestJobCreator(TestCase):
         Test start_job.
         """
         jc = mq.JobCreator(
-            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger())
+            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
         assert jc.create_job('project') is None  # No return value
         assert jc._channel.basic_publish.call_count == 1
         assert jc._channel.basic_publish.call_args[0][0] == 're'
@@ -68,7 +68,7 @@ class TestJobCreator(TestCase):
         #FIXME: Some mocks are hanging around messing with the results here
         #       Fix soon.
         jc = mq.JobCreator(
-            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger())
+            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
         jc.create_job('project')
         jc._channel.consume = mock.MagicMock()
         # Perfect world scenario

@@ -17,14 +17,18 @@ Message queue helpers.
 """
 
 import pika
+import pika.exceptions
 
 from flask import json
 
 
 class JobCreator(object):
 
-    def __init__(self, server, port, user, password, vhost, logger):
+    def __init__(
+            self, server, port, user, password,
+            vhost, logger, request_id):
         self.logger = logger
+        self.request_id = request_id
         creds = pika.PlainCredentials(user, password)
 
         # TODO: add ssl=True
@@ -35,11 +39,15 @@ class JobCreator(object):
             creds,
         )
 
-        self.logger.debug('Attemtping connection with amqp://%s:%s@%s:%s%s' % (
-            user, password, server, port, vhost))
+        self.logger.debug(
+            'Attemtping connection with amqp://%s:%s@%s:%s%s '
+            'for Request id: %s' % (
+                user, password, server, port, vhost, self.request_id))
         connection = pika.BlockingConnection(params)
-        self.logger.info('Connected to amqp://%s:***@%s:%s%s' % (
-            user, server, port, vhost))
+        self.logger.info(
+            'Connected to amqp://%s:***@%s:%s%s '
+            'for request id %s' % (
+                user, server, port, vhost, self.request_id))
         self._channel = connection.channel()
         # tmp_q is the queue which we will listen on for a response
         self._tmp_q = self._channel.queue_declare(auto_delete=True)
@@ -53,32 +61,44 @@ class JobCreator(object):
         properties.reply_to = self._tmp_q.method.queue
 
         self.logger.info('Creating a job for project %s using exchange '
-                         '%s and topic %s. Temp queue name is %s' % (
+                         '%s and topic %s. Temp queue name is %s '
+                         'for request id %s' % (
                              project, exchange, topic,
-                             self._tmp_q.method.queue))
+                             self._tmp_q.method.queue, self.request_id))
 
         # Send the message
         self._channel.basic_publish(
             exchange, topic,
             json.dumps({'project': project}), properties=properties)
 
-        self.logger.debug('Job request sent for project %s using exchange '
-                          '%s and topic %s' % (project, exchange, topic))
+        self.logger.debug(
+            'Job request sent for project %s using exchange '
+            '%s and topic %s for request id %s' % (
+                project, exchange, topic, self.request_id))
 
     def get_confirmation(self):
-        self.logger.info('Listening for response on temp queue %s' % (
-            self._tmp_q.method.queue))
+        self.logger.info(
+            'Listening for response on temp queue %s for request id %s' % (
+                self._tmp_q.method.queue, self.request_id))
         for method_frame, header_frame, body in self._channel.consume(
                 self._tmp_q.method.queue):
             try:
                 job_id = json.loads(body)['id']
                 self._channel.basic_ack(method_frame.delivery_tag)
-                self.logger.debug('Got job id of %s' % job_id)
+                self.logger.debug('Got job id of %s for request id %s' % (
+                    job_id, self.request_id))
                 return job_id
-            except Exception, ex:
+            except ValueError, vex:
                 self._channel.basic_reject(method_frame.delivery_tag)
-                self.logger.error('Error received: %s: %s' % (type(ex), ex))
-                raise ex
+                self.logger.error(
+                    'Could not load JSON message. '
+                    'Rejecting message. Error: %s for request id %s' % (
+                        vex, self.request_id))
+            except pika.exceptions.ChannelClosed:
+                self.logger.error(
+                    'The channel has unexpectedly closed. request id %s' % (
+                        self.request_id))
             finally:
-                self.logger.debug('Closed bus connection.')
+                self.logger.debug('Closed bus connection. request id %s' % (
+                    self.request_id))
                 self._channel.close()
