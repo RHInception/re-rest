@@ -66,22 +66,29 @@ class JobCreator(object):
                              project, exchange, topic,
                              self._tmp_q.method.queue, self.request_id))
 
-        # Send the message
-        self._channel.basic_publish(
-            exchange, topic,
-            json.dumps({'project': project}), properties=properties)
+        try:
+            # Send the message
+            self._channel.basic_publish(
+                exchange, topic,
+                json.dumps({'project': project}), properties=properties)
 
-        self.logger.debug(
-            'Job request sent for project %s using exchange '
-            '%s and topic %s for request id %s' % (
-                project, exchange, topic, self.request_id))
+            self.logger.debug(
+                'Job request sent for project %s using exchange '
+                '%s and topic %s for request id %s' % (
+                    project, exchange, topic, self.request_id))
+        except pika.exceptions.ChannelClosed:
+            self.logger.error(
+                'Unable to send the message. Channel is closed. '
+                'request id %s' % self.request_id)
 
     def get_confirmation(self):
         self.logger.info(
             'Listening for response on temp queue %s for request id %s' % (
                 self._tmp_q.method.queue, self.request_id))
+
         for method_frame, header_frame, body in self._channel.consume(
                 self._tmp_q.method.queue):
+
             try:
                 job_id = json.loads(body)['id']
                 self._channel.basic_ack(method_frame.delivery_tag)
@@ -101,4 +108,9 @@ class JobCreator(object):
             finally:
                 self.logger.debug('Closed bus connection. request id %s' % (
                     self.request_id))
-                self._channel.close()
+                try:
+                    self._channel.close()
+                except pika.exceptions.ChannelClosed:
+                    self.logger.debug(
+                        'Channel was alread closed. request id %s' % (
+                            self.request_id))

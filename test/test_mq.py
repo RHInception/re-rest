@@ -23,10 +23,12 @@ import pika
 from flask import json
 
 from rerest import mq
+from rerest.mq import JobCreator as JC
 
 from . import TestCase, unittest
 
 mq.pika = mock.Mock(pika)
+mq.pika.reset_mock()
 
 
 class TestJobCreator(TestCase):
@@ -35,7 +37,7 @@ class TestJobCreator(TestCase):
         """
         Reset the mock.
         """
-        mq.pika.BlockingConnection.reset_mock()
+        mq.pika.reset_mock()
 
     def test_create_object(self):
         """
@@ -43,7 +45,6 @@ class TestJobCreator(TestCase):
         """
         jc = mq.JobCreator(
             'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
-        print mq.pika.BlockingConnection.call_count
         assert mq.pika.BlockingConnection.call_count == 1
         assert jc._channel.queue_declare.call_count == 1
         jc._channel.queue_declare.assert_called_with(auto_delete=True)
@@ -65,23 +66,46 @@ class TestJobCreator(TestCase):
         """
         Test confirmation response.
         """
-        #FIXME: Some mocks are hanging around messing with the results here
-        #       Fix soon.
+        logger = mock.MagicMock()
         jc = mq.JobCreator(
-            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
+            'server', 5672, 'user', 'pass', 'vhost', logger, 1)
+        jc._channel.reset_mock()
         jc.create_job('project')
-        jc._channel.consume = mock.MagicMock()
+
         # Perfect world scenario
         jc._channel.consume.return_value = [[
             mock.Mock(delivery_tag=1),
             mock.Mock(delivery_tag=1),
-            '{"id": 1}']]
-        assert jc.get_confirmation() == 1
-        '''
-        # Not so perfect world scenario
+            '{"id": 10}']]
+
+        logger.reset_mock()
+        debug_count = logger.debug.call_count
+        assert jc.get_confirmation() == 10
+        assert logger.debug.call_count > debug_count
+
+        logger.reset_mock()
+        jc._channel.reset_mock()
+
+        # Not so perfect world scenarios
         jc._channel.consume.return_value = [[
             mock.Mock(delivery_tag=1),
             mock.Mock(delivery_tag=1),
             'not json data so it will error']]
-        self.assertRaises(Exception, jc.get_confirmation)
-        '''
+
+        jc.get_confirmation()
+        assert jc._channel.basic_reject.call_count == 1
+        assert logger.error.call_count == 1
+
+        logger.reset_mock()
+        jc._channel.reset_mock()
+
+        jc._channel.basic_ack.side_effect = pika.exceptions.ChannelClosed
+        jc.get_confirmation()
+        assert logger.error.call_count == 1
+
+        logger.reset_mock()
+        jc._channel.reset_mock()
+
+        jc._channel.basic_ack.side_effect = ValueError
+        jc.get_confirmation()
+        assert logger.error.call_count == 1

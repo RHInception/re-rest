@@ -56,7 +56,7 @@ class V0DeploymentAPI(MethodView):
 
             current_app.logger.debug(
                 'Confirmation for %s is %s. Request id: %s' % (
-                project, confirmation_id, request_id))
+                    project, confirmation_id, request_id))
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
         except KeyError, kex:
             current_app.logger.error(
@@ -70,7 +70,7 @@ class V0DeploymentAPI(MethodView):
             current_app.logger.error(
                 'Error creating job for %s. %s: %s. '
                 'Request id: %s' % (
-                project, type(ex).__name__, ex, request_id))
+                    project, type(ex).__name__, ex, request_id))
             return jsonify({'status': 'error'}), 500
 
 

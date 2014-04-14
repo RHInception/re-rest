@@ -24,14 +24,23 @@ from flask import request, json
 from . import TestCase, unittest
 
 from rerest import mq
+from rerest.mq import JobCreator
 
-# Mocks
+# Mock stuff
 mq.pika = mock.Mock(pika)
-mq.JobCreator.get_confirmation = mock.MagicMock(
-    mq.JobCreator.get_confirmation, return_value=1)
+orig_jc = JobCreator
+
 
 
 class TestV0DeploymentEndpoint(TestCase):
+
+    def setUp(self):
+        TestCase.setUp(self)
+        mq.JobCreator.get_confirmation = mock.MagicMock(
+            mq.JobCreator.get_confirmation, return_value=1)
+
+    def tearDown(self):
+        mq.jobCreator = orig_jc
 
     def test_create_new_deployment(self):
         """
