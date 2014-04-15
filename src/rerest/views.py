@@ -17,16 +17,19 @@ Views.
 """
 import uuid
 
-from flask import current_app, jsonify
+from flask import current_app, jsonify, request
 
 from flask.views import MethodView
 
 from rerest import mq
+from rerest.decorators import remote_user_required
 
 
 class V0DeploymentAPI(MethodView):
 
     methods = ['POST']
+    #: Decorators to be applied to all API methods in this class.
+    decorators = [remote_user_required]
 
     def put(self, project):
         """
@@ -34,8 +37,10 @@ class V0DeploymentAPI(MethodView):
         """
         try:
             request_id = str(uuid.uuid4())
+            user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
             current_app.logger.info(
-                'Starting release for %s as %s' % (project, request_id))
+                'Starting release for %s as %s for user %s' % (
+                    project, request_id, user))
             mq_data = current_app.config['MQ']
             jc = mq.JobCreator(
                 server=mq_data['SERVER'],
@@ -59,7 +64,9 @@ class V0DeploymentAPI(MethodView):
                 current_app.logger.info(
                     'Bus could not find project for request id %s' % (
                         request_id))
-                return jsonify({'status': 'project not found'}), 404
+                return jsonify({
+                    'status': 'error',
+                    'message': 'project not found'}), 404
 
             current_app.logger.debug(
                 'Confirmation for %s is %s. request id %s' % (
@@ -81,7 +88,8 @@ class V0DeploymentAPI(MethodView):
                 'Error creating job for %s. %s: %s. '
                 'Request id: %s' % (
                     project, type(ex).__name__, ex, request_id))
-            return jsonify({'status': 'error'}), 500
+            return jsonify({
+                'status': 'error', 'message': 'unknown error'}), 500
 
 
 def make_routes(app):

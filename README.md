@@ -4,15 +4,14 @@ Simple REST Api for our new [release engine hotness](https://github.com/RHIncept
 [![Build Status](https://api.travis-ci.org/RHInception/re-rest.png)](https://travis-ci.org/RHInception/re-rest/)
 
 ## Running From Source
-### With Flask
+To run directly from source in order to test out the server run:
+
 ```bash
-$ PYTHONPATH=src/ REREST_CONFIG=example-settings.json python src/rerest/app.py
+$ python rundevserver.py
 ```
 
-### With gunicorn
-```bash
-$ PYTHONPATH=`pwd`/src gunicorn -e REREST_CONFIG=example-settings.json --access-logfile access.log --error-logfile=error.log rerest.app:app
-```
+The dev server will allow any HTTP Basic Auth user/password combination.
+
 
 ## Unittests
 Use *nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest test/* from the main directory to execute unittests.
@@ -77,6 +76,14 @@ Gunicorn (http://gunicorn.org/) is a popular open source Python WSGI server. It'
 $ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:5000 --access-logfile=/your/access.log --error-logfile=/your/error.log -e REREST_CONFIG=/full/path/to/settings.json rerest.app:app
 ```
 
+## Authentication
+re-rest uses a simple decorater which enforces a REMOTE\_USER be set.
+
+### rerest.decorators:remote\_user\_required
+This decorator assumes that re-rest is running behind another web server which is taking care of authentication. If REMOTE\_USER is passed to re-rest from the web server re-rest assumes authentication has succeeded. If it is not passed through re-rest treats the users as unauthenticated.
+
+**WARNING**: When using this decorator it is very important that re-rest not be reachable by any means other than through the front end webserver!!
+
 
 ### Platform Gotcha's
 
@@ -97,3 +104,35 @@ You may need to add the following to your PYTHONPATH to be able to use Jinja2:
 6. Once a response is returned the REST service loads the body into a json structure and pulls out the id parameter.
 7. The REST service then responds to the user with the job id.
 8. The temporary response queue then is automatically deleted by the bus.
+
+
+## Deployment
+The authentication mechanism used in the front end webserver could be set up to use vastly different schemes. Instead of covering every possible authentication style which could be used we will work with two common ones in usage examples: htacces and kerberos.
+
+*Note*: Setting up the front end proxy server for authentication is out of scope for this documentation.
+
+### Example gunicorn appserver
+*Note*: This is an example of the backend portion, a proxy which handles authentication is required!
+
+```bash
+$ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:5000 --access-logfile=/your/access.log --error-logfile=/your/error.log -e REREST_CONFIG=/full/path/to/settings.json rerest.app:app
+```
+
+
+
+## Usage Example
+### htaccess
+```
+$ curl -X PUT --user "USERNAME" https://rerest.example.com/api/v0/test/deployment/
+Password:
+... # 201 and json data if exists, otherwise an error code
+```
+
+### kerberos
+```
+$ kinit -f USERNAME
+Password for USERNAME@DOMAIN:
+$ curl --negotiate -u 'a:a' policy -X PUT https://rerest.example.com/api/v0/test/deployment/
+
+... # 201 and json data if exists, otherwise an error code
+```
