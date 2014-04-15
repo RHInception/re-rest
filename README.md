@@ -61,7 +61,7 @@ Further configuration items can be found at http://flask.pocoo.org/docs/config/#
 * **Input Format**: None
 * **Inputs**: None
 
-## Depoloyment
+## Deployment
 
 ### Apache with mod\_wsgi
 mod_wsgi can be used with Apache to mount rerest. Example mod_wsgi files are located in contrib/mod_wsgi.
@@ -72,7 +72,7 @@ mod_wsgi can be used with Apache to mount rerest. Example mod_wsgi files are loc
 ### Gunicorn
 Gunicorn (http://gunicorn.org/) is a popular open source Python WSGI server. It's still recommend to use Apache (or another web server) to handle auth before gunicorn since gunicorn itself is not set up for it.
 
-```
+```bash
 $ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:5000 --access-logfile=/your/access.log --error-logfile=/your/error.log -e REREST_CONFIG=/full/path/to/settings.json rerest.app:app
 ```
 
@@ -106,22 +106,12 @@ You may need to add the following to your PYTHONPATH to be able to use Jinja2:
 8. The temporary response queue then is automatically deleted by the bus.
 
 
-## Deployment
+## Usage Example
 The authentication mechanism used in the front end webserver could be set up to use vastly different schemes. Instead of covering every possible authentication style which could be used we will work with two common ones in usage examples: htacces and kerberos.
 
 *Note*: Setting up the front end proxy server for authentication is out of scope for this documentation.
 
-### Example gunicorn appserver
-*Note*: This is an example of the backend portion, a proxy which handles authentication is required!
-
-```bash
-$ gunicorn --user=YOUR_WORKER_USER --group=YOUR_WORKER_GROUP -D -b 127.0.0.1:5000 --access-logfile=/your/access.log --error-logfile=/your/error.log -e REREST_CONFIG=/full/path/to/settings.json rerest.app:app
-```
-
-
-
-## Usage Example
-### htaccess
+### htaccess / HTTP Basic Auth
 ```
 $ curl -X PUT --user "USERNAME" https://rerest.example.com/api/v0/test/deployment/
 Password:
