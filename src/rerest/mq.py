@@ -49,11 +49,18 @@ class JobCreator(object):
             'for request id %s' % (
                 user, server, port, vhost, self.request_id))
         self._channel = connection.channel()
+        self.logger.debug(
+            'Declaring and binding queue for request id %s' % (
+                self.request_id))
         # tmp_q is the queue which we will listen on for a response
         self._tmp_q = self._channel.queue_declare(auto_delete=True)
         self._channel.queue_bind(
             queue=self._tmp_q.method.queue, exchange='re',
             routing_key=self._tmp_q.method.queue)
+        self.logger.info(
+            'Queue bound with routing id %s '
+            'for request id %s' % (
+                self._tmp_q.method.queue, self.request_id))
 
     def create_job(self, project, exchange='re', topic='job.create'):
         # Set up the reply-to to our temporary queue
@@ -68,14 +75,18 @@ class JobCreator(object):
 
         try:
             # Send the message
+            self.logger.debug(
+                'Sending job request for project %s using exchange '
+                '%s and topic %s for request id %s' % (
+                    project, exchange, topic, self.request_id))
+
             self._channel.basic_publish(
                 exchange, topic,
                 json.dumps({'project': project}), properties=properties)
 
-            self.logger.debug(
-                'Job request sent for project %s using exchange '
-                '%s and topic %s for request id %s' % (
-                    project, exchange, topic, self.request_id))
+            self.logger.info(
+                'Job request sent for request id %s' % (
+                    self.request_id))
         except pika.exceptions.ChannelClosed:
             self.logger.error(
                 'Unable to send the message. Channel is closed. '
@@ -88,14 +99,20 @@ class JobCreator(object):
 
         for method_frame, header_frame, body in self._channel.consume(
                 self._tmp_q.method.queue):
-
+            self.logger.debug('Message received: %s for request id %s' % (
+                body, self.request_id))
             try:
+                self.logger.info('Parsing bus response for request id %s' % (
+                    self.request_id))
                 job_id = json.loads(body)['id']
                 self._channel.basic_ack(method_frame.delivery_tag)
-                self.logger.debug('Got job id of %s for request id %s' % (
+                self.logger.info('Got job id of %s for request id %s' % (
                     job_id, self.request_id))
                 return job_id
             except ValueError, vex:
+                self.logger.info(
+                    'Rejecting bus response due to error for '
+                    'request id %s' % self.request_id)
                 self._channel.basic_reject(method_frame.delivery_tag)
                 self.logger.error(
                     'Could not load JSON message. '

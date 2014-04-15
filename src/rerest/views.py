@@ -34,6 +34,8 @@ class V0DeploymentAPI(MethodView):
         """
         try:
             request_id = str(uuid.uuid4())
+            current_app.logger.info(
+                'Starting release for %s as %s' % (project, request_id))
             mq_data = current_app.config['MQ']
             jc = mq.JobCreator(
                 server=mq_data['SERVER'],
@@ -47,16 +49,24 @@ class V0DeploymentAPI(MethodView):
             current_app.logger.info('Creating job for project %s' % project)
             jc.create_job(project)
             confirmation_id = jc.get_confirmation()
+            current_app.logger.debug(
+                'Confirmation id received for request id %s' % request_id)
             if confirmation_id is None:
                 current_app.logger.debug(
-                    'Confirmation for %s was none meaning the '
-                    'project does not exist. Request id: %s' % (
+                    'Confirmation for %s was None meaning the '
+                    'project does not exist. request id %s' % (
                         project, request_id))
+                current_app.logger.info(
+                    'Bus could not find project for request id %s' % (
+                        request_id))
                 return jsonify({'status': 'project not found'}), 404
 
             current_app.logger.debug(
-                'Confirmation for %s is %s. Request id: %s' % (
+                'Confirmation for %s is %s. request id %s' % (
                     project, confirmation_id, request_id))
+            current_app.logger.info(
+                'Created release as %s for request id %s' % (
+                    confirmation_id, request_id))
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
         except KeyError, kex:
             current_app.logger.error(
