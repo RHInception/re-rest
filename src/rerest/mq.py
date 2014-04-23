@@ -103,7 +103,8 @@ class JobCreator(object):
                     project, exchange, topic, self.request_id))
 
             self._channel.basic_publish(
-                exchange, topic,
+                exchange,
+                topic,
                 json.dumps({'project': project}), properties=properties)
 
             self.logger.info(
@@ -141,7 +142,8 @@ class JobCreator(object):
                 # Send out a notification that the job has been created.
                 properties = pika.spec.BasicProperties(app_id='rerest')
                 self._channel.basic_publish(
-                    exchange, 'notification',
+                    exchange,
+                    'notification',
                     json.dumps({
                         'slug': 'Started %s' % job_id,
                         'message': "Project %s's job %s has been started." % (
