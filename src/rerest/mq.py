@@ -92,7 +92,7 @@ class JobCreator(object):
                 'Unable to send the message. Channel is closed. '
                 'request id %s' % self.request_id)
 
-    def get_confirmation(self):
+    def get_confirmation(self, project, exchange='re'):
         self.logger.info(
             'Listening for response on temp queue %s for request id %s' % (
                 self._tmp_q.method.queue, self.request_id))
@@ -108,6 +108,21 @@ class JobCreator(object):
                 self._channel.basic_ack(method_frame.delivery_tag)
                 self.logger.info('Got job id of %s for request id %s' % (
                     job_id, self.request_id))
+
+                # Send out a notification that the job has been created.
+                # TODO: Update with the proper notification format
+
+                notify = "Project %s's job %s has been started." % (
+                    project, job_id)
+                properties = pika.spec.BasicProperties(app_id='rerest')
+                self._channel.basic_publish(
+                    exchange, 'notification',
+                    json.dumps({
+                        'subject': notify,
+                        'body': notify,
+                    }),
+                    properties=properties)
+
                 return job_id
             except ValueError, vex:
                 self.logger.info(

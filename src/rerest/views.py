@@ -53,7 +53,7 @@ class V0DeploymentAPI(MethodView):
             )
             current_app.logger.info('Creating job for project %s' % project)
             jc.create_job(project)
-            confirmation_id = jc.get_confirmation()
+            confirmation_id = jc.get_confirmation(project)
             current_app.logger.debug(
                 'Confirmation id received for request id %s' % request_id)
             if confirmation_id is None:
