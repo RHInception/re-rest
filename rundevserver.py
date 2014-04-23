@@ -48,3 +48,6 @@ if __name__ == '__main__':
     from rerest.app import app
     app.wsgi_app = DevUserMiddleware(app.wsgi_app)
     app.run(debug=True)
+else:
+    from rerest.app import app
+    app.wsgi_app = DevUserMiddleware(app.wsgi_app)
