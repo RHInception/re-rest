@@ -23,10 +23,24 @@ from flask import json
 
 
 class JobCreator(object):
+    """
+    Handles creation of a release job.
+    """
 
     def __init__(
             self, server, port, user, password,
             vhost, logger, request_id):
+        """
+        Creates a JobCreator instance.
+
+        server is the MQ server name
+        port is the MQ server port
+        user is the MQ server user
+        password is the MQ server password
+        vhost is the MQ server vhost
+        logger is the logger to output with
+        request_id is the applications request identifier
+        """
         self.logger = logger
         self.request_id = request_id
         creds = pika.PlainCredentials(user, password)
@@ -63,6 +77,14 @@ class JobCreator(object):
                 self._tmp_q.method.queue, self.request_id))
 
     def create_job(self, project, exchange='re', topic='job.create'):
+        """
+        Emits a message notifying the FSM that a release job needs
+        to be created.
+
+        project is the name of the project
+        exchange is the MQ exchange to emit on. Default: re
+        topic is the MQ topic to emit on. Default: job.create
+        """
         # Set up the reply-to to our temporary queue
         properties = pika.spec.BasicProperties()
         properties.reply_to = self._tmp_q.method.queue
@@ -93,6 +115,13 @@ class JobCreator(object):
                 'request id %s' % self.request_id)
 
     def get_confirmation(self, project, exchange='re'):
+        """
+        Gets a confirmation that the release job has been accepted
+        and started.
+
+        project is the name of the project
+        exchange is the MQ exchange to emit on. Default: re
+        """
         self.logger.info(
             'Listening for response on temp queue %s for request id %s' % (
                 self._tmp_q.method.queue, self.request_id))
