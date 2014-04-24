@@ -76,12 +76,14 @@ class JobCreator(object):
             'for request id %s' % (
                 self._tmp_q.method.queue, self.request_id))
 
-    def create_job(self, project, exchange='re', topic='job.create'):
+    def create_job(
+            self, project, dynamic=None, exchange='re', topic='job.create'):
         """
         Emits a message notifying the FSM that a release job needs
         to be created.
 
         project is the name of the project
+        dynamic is a dictionary of dynamic elements to pass through
         exchange is the MQ exchange to emit on. Default: re
         topic is the MQ topic to emit on. Default: job.create
         """
@@ -102,10 +104,17 @@ class JobCreator(object):
                 '%s and topic %s for request id %s' % (
                     project, exchange, topic, self.request_id))
 
+            msg = {'project': project}
+
+            if dynamic and type(dynamic) is dict:
+                msg['dynamic'] = dynamic
+
+            self.logger.debug('Message for %s: %s' % (self.request_id, msg))
+
             self._channel.basic_publish(
                 exchange,
                 topic,
-                json.dumps({'project': project}), properties=properties)
+                json.dumps(msg), properties=properties)
 
             self.logger.info(
                 'Job request sent for request id %s' % (

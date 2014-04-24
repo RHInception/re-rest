@@ -59,7 +59,7 @@ Further configuration items can be found at http://flask.pocoo.org/docs/config/#
 * **Response Type**: json
 * **Response Example**: ```{"status": "created", "id": 1}```
 * **Input Format**: None
-* **Inputs**: None
+* **Inputs**: optional json
 
 ## Deployment
 

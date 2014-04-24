@@ -37,6 +37,7 @@ class V0DeploymentAPI(MethodView):
         """
         try:
             request_id = str(uuid.uuid4())
+
             user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
             current_app.logger.info(
                 'Starting release for %s as %s for user %s' % (
@@ -52,7 +53,10 @@ class V0DeploymentAPI(MethodView):
                 request_id=request_id
             )
             current_app.logger.info('Creating job for project %s' % project)
-            jc.create_job(project)
+            #                      Here we are passing json if there is any
+            #                      or returning None otherwise (silent=True)
+            jc.create_job(project, dynamic=request.get_json(
+                force=True, silent=True))
             confirmation_id = jc.get_confirmation(project)
             current_app.logger.debug(
                 'Confirmation id received for request id %s' % request_id)
