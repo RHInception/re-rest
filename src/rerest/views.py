@@ -55,6 +55,8 @@ class V0DeploymentAPI(MethodView):
             current_app.logger.info('Creating job for project %s' % project)
             #                      Here we are passing json if there is any
             #                      or returning None otherwise (silent=True)
+            current_app.logger.info("Received dynamic keys: %s" % \
+                                    str(request.get_json(force=True, silent=True)))
             jc.create_job(project, dynamic=request.get_json(
                 force=True, silent=True))
             confirmation_id = jc.get_confirmation(project)
