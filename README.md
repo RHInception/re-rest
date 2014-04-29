@@ -21,16 +21,22 @@ Configuration of the server is done in JSON and is by default kept in the curren
 
 You can override the location by setting `REREST_CONFIG` environment variable.
 
-| Name     | Type | Parent | Value                                      |
-|----------|------|--------|--------------------------------------------|
-| LOGFILE  | str  | None   | File name for the application level log    |
-| LOGLEVEL | str  | None   | DEBUG, INFO (default), WARN, FATAL         |
-| MQ       | dict | None   | Where all of the MQ connection settins are |
-| SERVER   | str  | MQ     | Hostname or IP of the server               |
-| PORT     | int  | MQ     | Port to connect on                         |
-| USER     | str  | MQ     | Username to connect with                   |
-| PASSWORD | str  | MQ     | Password to authenticate with              |
-| VHOST    | str  | MQ     | vhost on the server to utilize             |
+| Name              | Type | Parent            | Value                                      |
+|-------------------|------|-------------------|--------------------------------------------|
+| LOGFILE           | str  | None              | File name for the application level log    |
+| LOGLEVEL          | str  | None              | DEBUG, INFO (default), WARN, FATAL         |
+| MQ                | dict | None              | Where all of the MQ connection settins are |
+| SERVER            | str  | MQ                | Hostname or IP of the server               |
+| PORT              | int  | MQ                | Port to connect on                         |
+| USER              | str  | MQ                | Username to connect with                   |
+| PASSWORD          | str  | MQ                | Password to authenticate with              |
+| VHOST             | str  | MQ                | vhost on the server to utilize             |
+| MONGODB\_SETTINGS | dict | None              | Where all of the MongoDB settings live     |
+| DB                | str  | MONGODB\_Settings | Name of the database to use                |
+| USERNAME          | str  | MONGODB\_Settings | Username to auth with                      |
+| Password          | str  | MONGODB\_Settings | Password to auth with                      |
+| HOST              | str  | MONGODB\_Settings | Host to connect to                         |
+| PORT              | int  | MONGODB\_Settings | Port to connect to on the host             |
 
 Further configuration items can be found at http://flask.pocoo.org/docs/config/#builtin-configuration-values
 
@@ -48,6 +54,13 @@ Further configuration items can be found at http://flask.pocoo.org/docs/config/#
         "USER": "guest",
         "PASSWORD": "guest",
         "VHOST": "/"
+    },
+    "MONGODB_SETTINGS": {
+        "DB": "re",
+        "USERNAME": "username",
+        "PASSWORD": "password",
+        "HOST": "127.0.0.1",
+        "PORT": 27017
     }
 }
 ```

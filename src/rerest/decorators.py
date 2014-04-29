@@ -16,7 +16,7 @@
 Authentication decorators.
 """
 
-from flask import request, jsonify
+from flask import current_app, request, jsonify, g
 
 
 def remote_user_required(f):
@@ -26,5 +26,29 @@ def remote_user_required(f):
     def decorator(*args, **kwargs):
         if not request.remote_user:
             return jsonify({'status': 'error', 'message': 'unauthorized'}), 401
+        return f(*args, **kwargs)
+    return decorator
+
+
+def require_database(f):
+    """
+    Ensures that g.db is set and connected.
+    """
+
+    def decorator(*args, **kwargs):
+        db = g.get('db', None)
+        if db:
+            # TODO: check staleness
+            pass
+        else:
+            import pymongo
+            mongo_cfg = current_app.config['MONGODB_SETTINGS']
+            g.db = pymongo.MongoClient(
+                'mongodb://%s:%s@%s:%s/%s' % (
+                    mongo_cfg['USERNAME'],
+                    mongo_cfg['PASSWORD'],
+                    mongo_cfg['HOST'],
+                    int(mongo_cfg['PORT']),
+                    mongo_cfg['DB']))
         return f(*args, **kwargs)
     return decorator

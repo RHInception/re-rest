@@ -17,12 +17,12 @@ Views.
 """
 import uuid
 
-from flask import current_app, jsonify, request
+from flask import current_app, jsonify, request, g
 
 from flask.views import MethodView
 
 from rerest import mq
-from rerest.decorators import remote_user_required
+from rerest.decorators import remote_user_required, require_database
 
 
 class V0DeploymentAPI(MethodView):
@@ -31,6 +31,7 @@ class V0DeploymentAPI(MethodView):
     #: Decorators to be applied to all API methods in this class.
     decorators = [remote_user_required]
 
+    @require_database
     def put(self, project):
         """
         Creates a new deployment.
@@ -55,8 +56,9 @@ class V0DeploymentAPI(MethodView):
             current_app.logger.info('Creating job for project %s' % project)
             #                      Here we are passing json if there is any
             #                      or returning None otherwise (silent=True)
-            current_app.logger.info("Received dynamic keys: %s" % \
-                                    str(request.get_json(force=True, silent=True)))
+            current_app.logger.info(
+                "Received dynamic keys: %s" % (
+                    str(request.get_json(force=True, silent=True))))
             jc.create_job(project, dynamic=request.get_json(
                 force=True, silent=True))
             confirmation_id = jc.get_confirmation(project)
