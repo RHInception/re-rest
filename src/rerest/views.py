@@ -31,7 +31,6 @@ class V0DeploymentAPI(MethodView):
     #: Decorators to be applied to all API methods in this class.
     decorators = [remote_user_required]
 
-    @require_database
     def put(self, project):
         """
         Creates a new deployment.

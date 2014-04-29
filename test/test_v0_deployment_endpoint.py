@@ -31,7 +31,6 @@ mq.pika = mock.Mock(pika)
 orig_jc = JobCreator
 
 
-@mock.patch('rerest.decorators.require_database')
 class TestV0DeploymentEndpoint(TestCase):
 
     def setUp(self):
@@ -42,7 +41,7 @@ class TestV0DeploymentEndpoint(TestCase):
     def tearDown(self):
         mq.jobCreator = orig_jc
 
-    def test_create_new_deployment_with_user(self, requires_database):
+    def test_create_new_deployment_with_user(self):
         """
         Test creating new deployment requests.
         """
@@ -63,7 +62,7 @@ class TestV0DeploymentEndpoint(TestCase):
             response = c.post('/api/v0//deployment/')
             assert response.status_code == 404
 
-    def test_create_new_deployment_without_user(self, requires_database):
+    def test_create_new_deployment_without_user(self):
         """
         New deployments should fail without a user.
         """
