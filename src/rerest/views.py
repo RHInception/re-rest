@@ -17,6 +17,8 @@ Views.
 """
 import uuid
 
+from bson import ObjectId
+from bson.errors import InvalidId
 from flask import current_app, jsonify, json, request, g
 
 from flask.views import MethodView
@@ -117,19 +119,31 @@ class V0PlaybookAPI(MethodView):
         request_id = str(uuid.uuid4())
 
         if id is None:
-            # TODO: Get document from database
+            # List playbooks
             current_app.logger.debug(
                 'Listing known playbooks for project %s. '
                 'Request id: %s' % (
                     project, request_id))
-            return jsonify({'status': 'ok', 'items': [12345]}), 200
 
-        # TODO: get documents from database
+            playbooks = g.db.re.playbooks.find({"project": str(project)})
+            items = []
+            for item in playbooks:
+                del item["_id"]
+                items.append(item)
+            return jsonify({'status': 'ok', 'items': items}), 200
+
+        # One playbook
+        playbook = g.db.re.playbooks.find_one({
+            "_id": ObjectId(id), "project": str(project)})
+
+        if playbook is None:
+            return jsonify({'status': 'not found'}), 404
         current_app.logger.debug(
             'Listing known playbook %s for project %s. '
             'Request id: %s' % (
                 id, project, request_id))
-        return jsonify({'status': 'ok', 'item': {'data': 'here'}}), 200
+        del playbook["_id"]
+        return jsonify({'status': 'ok', 'item': playbook}), 200
 
     def put(self, project):
         request_id = str(uuid.uuid4())
@@ -139,8 +153,10 @@ class V0PlaybookAPI(MethodView):
             'Creating a new playbook for project %s by user %s. '
             'Request id: %s' % (
                 project, request_id, user))
-        # TODO: Insert into database
-        return jsonify({'status': 'created', 'id': 2}), 201
+
+        id = g.db.re.playbooks.insert({"project": str(project)})
+
+        return jsonify({'status': 'created', 'id': str(id)}), 201
 
     def post(self, project, id):
         request_id = str(uuid.uuid4())
@@ -150,21 +166,36 @@ class V0PlaybookAPI(MethodView):
             'Updating a playbook for project %s by user %s. '
             'Request id: %s' % (
                 project, request_id, user))
-        # TODO: Verify the record exists
-        # TODO: Update record in the database
-        return jsonify({'status': 'ok', 'id': 2}), 200
+        try:
+            oid = ObjectId(id)
+        except InvalidId:
+            return jsonify({'status': 'bad request', 'message': 'Bad id'}), 400
+
+        exists = g.db.re.playbooks.find_one({"_id": oid})
+        if exists:
+            g.db.re.playbooks.update({
+                "_id": oid}, {"$set": {"data": "test update"}})
+            return jsonify({'status': 'ok', 'id': str(exists['_id'])}), 200
+        return jsonify({'status': 'not found'}), 404
 
     def delete(self, project, id):
         request_id = str(uuid.uuid4())
-
         user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
+
+        try:
+            oid = ObjectId(id)
+        except InvalidId:
+            return jsonify({'status': 'bad request', 'message': 'Bad id'}), 400
+
         current_app.logger.info(
             'Deleting playbook %s for project %s by user %s. '
             'Request id: %s' % (
                 id, project, request_id, user))
-        # TODO: Verify record exists
-        # TODO: Delete record
-        return jsonify({'status': 'gone'}), 410
+        exists = g.db.re.playbooks.find_one({"_id": oid})
+        if exists:
+            g.db.re.playbooks.remove({"_id": oid})
+            return jsonify({'status': 'gone'}), 410
+        return jsonify({'status': 'not found'}), 404
 
 
 def make_routes(app):

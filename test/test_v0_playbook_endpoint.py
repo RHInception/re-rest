@@ -18,7 +18,7 @@ Unittests.
 
 import json
 import mock
-
+from bson import ObjectId
 from flask import request, json, g
 
 from . import TestCase, unittest
@@ -34,7 +34,13 @@ from flask import appcontext_pushed
 def db_ctx(app):
     def handler(sender, **kwargs):
         g.db = mock.MagicMock()
-        print g.db
+        g.db.re.playbooks.insert.return_value = '53614ccf1370129d6f29c7dd'
+        g.db.re.playbooks.save.return_value = '53614ccf1370129d6f29c7dd'
+        g.db.re.playbooks.find_one.return_value = {
+            "_id": ObjectId('53614ccf1370129d6f29c7dd'),
+            "data": "test"}
+        g.db.re.playbooks.remove.return_value = True
+
     with appcontext_pushed.connected_to(handler, app):
         yield
 
@@ -88,11 +94,11 @@ class TestV0PlaybookEndpoint(TestCase):
             # Check with good input
             with self.test_client() as c:
                 response = c.get(
-                    '/api/v0/test/playbook/1/',
+                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
                 assert request.view_args['project'] == 'test'
-                assert request.view_args['id'] == '1'
+                assert request.view_args['id'] == '53614ccf1370129d6f29c7dd'
                 assert response.status_code == 200
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
@@ -107,7 +113,7 @@ class TestV0PlaybookEndpoint(TestCase):
             # If there is no user we should fail
             with self.test_client() as c:
                 assert self._check_unauth_response(c.get(
-                    '/api/v0/test/playbook/1/'))
+                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/'))
 
     def test_create_playbook(self):
         """
@@ -127,7 +133,7 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
                 assert result['status'] == 'created'
-                assert result['id'] == 2
+                assert result['id'] == '53614ccf1370129d6f29c7dd'
 
             # Check with bad input
             with self.test_client() as c:
@@ -147,7 +153,7 @@ class TestV0PlaybookEndpoint(TestCase):
             # Check with good input
             with self.test_client() as c:
                 response = c.post(
-                    '/api/v0/test/playbook/2/',
+                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
                     data=json.dumps({'test': 'data'}),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
@@ -156,11 +162,12 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
                 assert result['status'] == 'ok'
-                assert result['id'] == 2
+                assert result['id'] == '53614ccf1370129d6f29c7dd'
 
             # Check with bad input
             with self.test_client() as c:
-                response = c.post('/api/v0//playbook/2/')
+                response = c.post(
+                    '/api/v0//playbook/53614ccf1370129d6f29c7dd/')
                 assert response.status_code == 404
 
             with self.test_client() as c:
@@ -170,7 +177,7 @@ class TestV0PlaybookEndpoint(TestCase):
             # If there is no user we should fail
             with self.test_client() as c:
                 assert self._check_unauth_response(c.post(
-                    '/api/v0/test/playbook/2/'))
+                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/'))
 
     def test_delete_playbook(self):
         """
@@ -180,11 +187,11 @@ class TestV0PlaybookEndpoint(TestCase):
             # Check with good input
             with self.test_client() as c:
                 response = c.delete(
-                    '/api/v0/test/playbook/1/',
+                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
                 assert request.view_args['project'] == 'test'
-                assert request.view_args['id'] == '1'
+                assert request.view_args['id'] == '53614ccf1370129d6f29c7dd'
                 assert response.status_code == 410
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
@@ -202,4 +209,4 @@ class TestV0PlaybookEndpoint(TestCase):
             # If there is no user we should fail
             with self.test_client() as c:
                 assert self._check_unauth_response(c.delete(
-                    '/api/v0/test/playbook/1/'))
+                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/'))

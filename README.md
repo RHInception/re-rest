@@ -69,10 +69,57 @@ Further configuration items can be found at http://flask.pocoo.org/docs/config/#
 ### /api/v0/*$PROJECT*/deployment/
 
 #### PUT
+Creates a new deployment.
+
 * **Response Type**: json
 * **Response Example**: ```{"status": "created", "id": 1}```
 * **Input Format**: None
 * **Inputs**: optional json
+
+### /api/v0/*$PROJECT*/playbook/
+
+#### GET
+Gets a list of all playbooks for a project.
+
+* **Response Type**: json
+* **Response Example**: ```{"status": "ok", "items": [...]}```
+* **Input Format**: None
+* **Inputs**: None
+
+#### PUT
+Creates a new playbook.
+
+* **Response Type**: json
+* **Response Example**: ```{"status": "created", "id": "53614ccf1370129d6f29c7dd"}```
+* **Input Format**: json
+* **Inputs**: **TODO**
+
+### /api/v0/*$PROJECT*/playbook/*$ID*/
+
+#### GET
+Gets a playbooks for a project.
+
+* **Response Type**: json
+* **Response Example**: ```{"status": "ok", "item": ...}```
+* **Input Format**: None
+* **Inputs**: None
+
+#### POST
+Replace a playbook in a project.
+
+* **Response Type**: json
+* **Response Example**: ```{"status": "ok", "id": "53614ccf1370129d6f29c7dd"}```
+* **Input Format**: json
+* **Inputs**: **TODO**
+
+#### DELETE
+Delete a playbook in a project.
+
+* **Response Type**: json
+* **Response Example**: ```{"status": "gone"}```
+* **Input Format**: None
+* **Inputs**: None
+
 
 ## Deployment
 
