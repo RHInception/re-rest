@@ -99,11 +99,81 @@ class V0DeploymentAPI(MethodView):
                 'status': 'error', 'message': 'unknown error'}), 500
 
 
+class V0PlaybookAPI(MethodView):
+
+    methods = ['GET', 'PUT', 'POST', 'DELETE']
+    #: Decorators to be applied to all API methods in this class.
+    decorators = [remote_user_required, require_database]
+
+    def get(self, project, id=None):
+        request_id = str(uuid.uuid4())
+
+        if id is None:
+            # TODO: Get document from database
+            current_app.logger.debug(
+                'Listing known playbooks for project %s. '
+                'Request id: %s' % (
+                    project, request_id))
+            return jsonify({'status': 'ok', 'items': [12345]}), 200
+
+        # TODO: get documents from database
+        current_app.logger.debug(
+            'Listing known playbook %s for project %s. '
+            'Request id: %s' % (
+                id, project, request_id))
+        return jsonify({'status': 'ok', 'item': {'data': 'here'}}), 200
+
+    def put(self, project):
+        request_id = str(uuid.uuid4())
+
+        user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
+        current_app.logger.info(
+            'Creating a new playbook for project %s by user %s. '
+            'Request id: %s' % (
+                project, request_id, user))
+        # TODO: Insert into database
+        return jsonify({'status': 'created', 'id': 2}), 201
+
+    def post(self, project, id):
+        request_id = str(uuid.uuid4())
+
+        user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
+        current_app.logger.info(
+            'Updating a playbook for project %s by user %s. '
+            'Request id: %s' % (
+                project, request_id, user))
+        # TODO: Verify the record exists
+        # TODO: Update record in the database
+        return jsonify({'status': 'ok', 'id': 2}), 200
+
+    def delete(self, project, id):
+        request_id = str(uuid.uuid4())
+
+        user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
+        current_app.logger.info(
+            'Deleting playbook %s for project %s by user %s. '
+            'Request id: %s' % (
+                id, project, request_id, user))
+        # TODO: Verify record exists
+        # TODO: Delete record
+        return jsonify({'status': 'gone'}), 410
+
+
 def make_routes(app):
     """
     Makes and appends routes to app.
     """
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
+    playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
+
     app.add_url_rule('/api/v0/<project>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
+
+    app.add_url_rule('/api/v0/<project>/playbook/',
+                     view_func=playbook_api_view, methods=[
+                         'GET', 'PUT'])
+    app.add_url_rule('/api/v0/<project>/playbook/<id>/',
+                     view_func=playbook_api_view, methods=[
+                         'GET', 'POST', 'DELETE'])
+
     app.logger.info('Added v0 routes.')
