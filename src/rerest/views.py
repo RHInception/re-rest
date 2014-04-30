@@ -154,7 +154,10 @@ class V0PlaybookAPI(MethodView):
             'Request id: %s' % (
                 project, request_id, user))
 
-        id = g.db.re.playbooks.insert({"project": str(project)})
+        playbook = json.loads(request.data)
+        # TODO: Validate playbook
+        playbook["project"] = str(project)
+        id = g.db.re.playbooks.insert(playbook)
 
         return jsonify({'status': 'created', 'id': str(id)}), 201
 
@@ -173,8 +176,9 @@ class V0PlaybookAPI(MethodView):
 
         exists = g.db.re.playbooks.find_one({"_id": oid})
         if exists:
-            g.db.re.playbooks.update({
-                "_id": oid}, {"$set": {"data": "test update"}})
+            playbook = json.loads(request.data)
+            # TODO: Validate playbook
+            g.db.re.playbooks.update({"_id": oid}, playbook)
             return jsonify({'status': 'ok', 'id': str(exists['_id'])}), 200
         return jsonify({'status': 'not found'}), 404
 
