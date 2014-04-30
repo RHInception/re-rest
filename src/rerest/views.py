@@ -55,11 +55,16 @@ class V0DeploymentAPI(MethodView):
             current_app.logger.info('Creating job for project %s' % project)
             #                      Here we are passing json if there is any
             #                      or returning None otherwise (silent=True)
+            try:
+                dynamic = request.get_json(force=True, silent=True))
+            except AttributeError:
+                current_app.logger.debug('No data sent in request for dynamic'
+                                         'variables.')
+                dynamic = {}
             current_app.logger.info(
                 "Received dynamic keys: %s" % (
-                    str(request.get_json(force=True, silent=True))))
-            jc.create_job(project, dynamic=request.get_json(
-                force=True, silent=True))
+                    str(dynamic)))
+            jc.create_job(project, dynamic=dynamic)
             confirmation_id = jc.get_confirmation(project)
             current_app.logger.debug(
                 'Confirmation id received for request id %s' % request_id)

@@ -139,3 +139,21 @@ $ curl --negotiate -u 'a:a' policy -X PUT https://rerest.example.com/api/v0/test
 
 ... # 201 and json data if exists, otherwise an error code
 ```
+
+### Dynamic Variables
+Passing dynamic variables requires two additions
+
+1. We must set the ``Content-Type`` header (``-H ...`` below) to ``application/json``
+2. We must pass **data** (``-d '{....}'`` below) for the ``PUT`` to send to the server
+
+This example sets the ``Content-Type`` and passes two **dynamic
+variables**: ``cart`` which is the name of a
+[Juicer](https://github.com/juicer/juicer) release cart, and
+``environment``, which is the environment to push the release cart
+contents to.
+
+```
+$ curl -H "Content-Type: application/json" -d '{"cart": "bitmath", "environment": "re"}' -X PUT http://rerest.example.com/api/v0/test/deployment/
+
+... # 201 and json data if exists, otherwise an error code
+```
