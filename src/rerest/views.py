@@ -17,7 +17,7 @@ Views.
 """
 import uuid
 
-from flask import current_app, jsonify, request, g
+from flask import current_app, jsonify, json, request, g
 
 from flask.views import MethodView
 
@@ -56,11 +56,11 @@ class V0DeploymentAPI(MethodView):
             #                      Here we are passing json if there is any
             #                      or returning None otherwise (silent=True)
             try:
-                dynamic = request.get_json(force=True, silent=True)
+                dynamic = json.loads(request.data)
                 # If we got nothing then raise (to catch)
                 if dynamic is None:
-                    raise AttributeError('No data')
-            except AttributeError:
+                    raise ValueError('No data')
+            except ValueError:
                 current_app.logger.debug('No data sent in request for dynamic'
                                          'variables.')
                 dynamic = {}
