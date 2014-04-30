@@ -57,6 +57,9 @@ class V0DeploymentAPI(MethodView):
             #                      or returning None otherwise (silent=True)
             try:
                 dynamic = request.get_json(force=True, silent=True)
+                # If we got nothing then raise (to catch)
+                if dynamic is None:
+                    raise AttributeError('No data')
             except AttributeError:
                 current_app.logger.debug('No data sent in request for dynamic'
                                          'variables.')
