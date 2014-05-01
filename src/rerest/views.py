@@ -132,6 +132,7 @@ class V0PlaybookAPI(MethodView):
             playbooks = g.db.re.playbooks.find({"project": str(project)})
             items = []
             for item in playbooks:
+                item["id"] = str(item["_id"])
                 del item["_id"]
                 items.append(item)
             return jsonify({'status': 'ok', 'items': items}), 200
@@ -146,6 +147,8 @@ class V0PlaybookAPI(MethodView):
             'Listing known playbook %s for project %s. '
             'Request id: %s' % (
                 id, project, request_id))
+
+        playbook["id"] = str(playbook["_id"])
         del playbook["_id"]
         return jsonify({'status': 'ok', 'item': playbook}), 200
 
