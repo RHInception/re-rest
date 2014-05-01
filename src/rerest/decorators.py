@@ -16,6 +16,8 @@
 Authentication decorators.
 """
 
+import urllib
+
 from flask import current_app, request, jsonify, g
 
 
@@ -45,8 +47,8 @@ def require_database(f):
             mongo_cfg = current_app.config['MONGODB_SETTINGS']
             g.db = pymongo.MongoClient(
                 'mongodb://%s:%s@%s:%s/%s' % (
-                    mongo_cfg['USERNAME'],
-                    mongo_cfg['PASSWORD'],
+                    urllib.quote(mongo_cfg['USERNAME']),
+                    urllib.quote(mongo_cfg['PASSWORD']),
                     mongo_cfg['HOST'],
                     int(mongo_cfg['PORT']),
                     mongo_cfg['DB']))
