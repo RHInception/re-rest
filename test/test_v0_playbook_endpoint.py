@@ -30,6 +30,22 @@ from contextlib import contextmanager
 from flask import appcontext_pushed
 
 
+PLAYBOOK = {
+    "project": "example project",
+    "ownership": {
+        "id": "Some team",
+        "contact": "someteam@example.com"
+    },
+    "steps": [{
+        "name": "example step",
+        "plugin": "shexec",
+        "parameters": {
+            "command": "ls -l /"
+        }
+    }]
+}
+
+
 @contextmanager
 def db_ctx(app):
     def handler(sender, **kwargs):
@@ -125,7 +141,7 @@ class TestV0PlaybookEndpoint(TestCase):
             with self.test_client() as c:
                 response = c.put(
                     '/api/v0/test/playbook/',
-                    data=json.dumps({'test': 'data'}),
+                    data=json.dumps(PLAYBOOK),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
                 assert request.view_args['project'] == 'test'
@@ -154,7 +170,7 @@ class TestV0PlaybookEndpoint(TestCase):
             with self.test_client() as c:
                 response = c.post(
                     '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
-                    data=json.dumps({'test': 'data'}),
+                    data=json.dumps(PLAYBOOK),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
                 assert request.view_args['project'] == 'test'

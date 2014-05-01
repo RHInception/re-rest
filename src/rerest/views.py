@@ -25,6 +25,7 @@ from flask.views import MethodView
 
 from rerest import mq
 from rerest.decorators import remote_user_required, require_database
+from rerest.validators import validate_playbook
 
 
 class V0DeploymentAPI(MethodView):
@@ -116,6 +117,9 @@ class V0PlaybookAPI(MethodView):
     decorators = [remote_user_required, require_database]
 
     def get(self, project, id=None):
+        """
+        Gets a list or single playbook and returns it to the requestor.
+        """
         request_id = str(uuid.uuid4())
 
         if id is None:
@@ -146,6 +150,9 @@ class V0PlaybookAPI(MethodView):
         return jsonify({'status': 'ok', 'item': playbook}), 200
 
     def put(self, project):
+        """
+        Creates a new playbook for a project.
+        """
         request_id = str(uuid.uuid4())
 
         user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
@@ -155,13 +162,19 @@ class V0PlaybookAPI(MethodView):
                 project, request_id, user))
 
         playbook = json.loads(request.data)
-        # TODO: Validate playbook
-        playbook["project"] = str(project)
-        id = g.db.re.playbooks.insert(playbook)
+        try:
+            validate_playbook(playbook)
+            playbook["project"] = str(project)
+            id = g.db.re.playbooks.insert(playbook)
 
-        return jsonify({'status': 'created', 'id': str(id)}), 201
+            return jsonify({'status': 'created', 'id': str(id)}), 201
+        except KeyError, ke:
+            return jsonify({'status': 'bad request', 'message': str(ke)})
 
     def post(self, project, id):
+        """
+        Replaces a playbook for a project.
+        """
         request_id = str(uuid.uuid4())
 
         user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
@@ -177,12 +190,19 @@ class V0PlaybookAPI(MethodView):
         exists = g.db.re.playbooks.find_one({"_id": oid})
         if exists:
             playbook = json.loads(request.data)
-            # TODO: Validate playbook
-            g.db.re.playbooks.update({"_id": oid}, playbook)
-            return jsonify({'status': 'ok', 'id': str(exists['_id'])}), 200
+            try:
+                validate_playbook(playbook)
+                g.db.re.playbooks.update({"_id": oid}, playbook)
+                return jsonify({'status': 'ok', 'id': str(exists['_id'])}), 200
+            except KeyError, ke:
+                return jsonify({'status': 'bad request', 'message': str(ke)})
+
         return jsonify({'status': 'not found'}), 404
 
     def delete(self, project, id):
+        """
+        Deletes a playbook.
+        """
         request_id = str(uuid.uuid4())
         user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
 
