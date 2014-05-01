@@ -27,7 +27,7 @@ reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
     name='rerest',
-    version='0.0.1',
+    version='0.0.2',
     author='See AUTHORS',
     url='https://github.com/RHInception/re-rest',
     license='AGPLv3',

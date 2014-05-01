@@ -1,7 +1,7 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
 
 Name:           rerest
-Version:        0.0.1
+Version:        0.0.2
 Release:        1%{?dist}
 Summary:        Simple REST Api for release automation
 
@@ -40,5 +40,8 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Thu Mar  1 2014 Steve Milner <stevem@gnulinux.net>- 0.0.2-1
+- Mongo support.
+
 * Tue Apr  8 2014 Steve Milner <stevem@gnulinux.net>- 0.0.1-1
 - Initial spec
