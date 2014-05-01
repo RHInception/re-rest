@@ -190,6 +190,7 @@ class V0PlaybookAPI(MethodView):
         exists = g.db.re.playbooks.find_one({"_id": oid})
         if exists:
             playbook = json.loads(request.data)
+            playbook["project"] = str(project)
             try:
                 validate_playbook(playbook)
                 g.db.re.playbooks.update({"_id": oid}, playbook)
