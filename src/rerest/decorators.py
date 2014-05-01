@@ -36,7 +36,7 @@ def require_database(f):
     """
 
     def decorator(*args, **kwargs):
-        db = g.get('db', None)
+        db = getattr(g, 'db', None)
         if db:
             # TODO: check staleness
             pass
