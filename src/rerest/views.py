@@ -40,10 +40,9 @@ class V0DeploymentAPI(MethodView):
         Creates a new deployment.
         """
         try:
-            user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
             current_app.logger.info(
                 'Starting release for %s as %s for user %s' % (
-                    project, request.request_id, user))
+                    project, request.request_id, request.remote_user))
             mq_data = current_app.config['MQ']
             jc = mq.JobCreator(
                 server=mq_data['SERVER'],
@@ -124,9 +123,9 @@ class V0PlaybookAPI(MethodView):
         if id is None:
             # List playbooks
             current_app.logger.debug(
-                'Listing known playbooks for project %s. '
+                'User %s is listing known playbooks for project %s. '
                 'Request id: %s' % (
-                    project, request.request_id))
+                    request.remote_user, project, request.request_id))
 
             playbooks = g.db.re.playbooks.find({"project": str(project)})
             items = []
@@ -155,11 +154,10 @@ class V0PlaybookAPI(MethodView):
         """
         Creates a new playbook for a project.
         """
-        user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
         current_app.logger.info(
             'Creating a new playbook for project %s by user %s. '
             'Request id: %s' % (
-                project, user, request.request_id))
+                project, request.remote_user, request.request_id))
 
         playbook = json.loads(request.data)
         try:
@@ -175,11 +173,10 @@ class V0PlaybookAPI(MethodView):
         """
         Replaces a playbook for a project.
         """
-        user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
         current_app.logger.info(
             'Updating a playbook for project %s by user %s. '
             'Request id: %s' % (
-                project, request.request_id, user))
+                project, request.remote_user, request.request_id))
         try:
             oid = ObjectId(id)
         except InvalidId:
@@ -202,7 +199,6 @@ class V0PlaybookAPI(MethodView):
         """
         Deletes a playbook.
         """
-        user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
 
         try:
             oid = ObjectId(id)
@@ -212,7 +208,7 @@ class V0PlaybookAPI(MethodView):
         current_app.logger.info(
             'Deleting playbook %s for project %s by user %s. '
             'Request id: %s' % (
-                id, project, request.request_id, user))
+                id, project, request.remote_user, request.request_id))
         exists = g.db.re.playbooks.find_one({"_id": oid})
         if exists:
             g.db.re.playbooks.remove({"_id": oid})
