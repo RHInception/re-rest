@@ -97,7 +97,6 @@ class TestV0PlaybookEndpoint(TestCase):
                     '/api/v0/playbooks/',
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == None
                 assert response.status_code == 200
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
