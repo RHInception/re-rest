@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Authentication decorators.
+Decorators.
 """
-
+import uuid
 import urllib
 
 from flask import current_app, request, jsonify, g
@@ -28,6 +28,16 @@ def remote_user_required(f):
     def decorator(*args, **kwargs):
         if not request.remote_user:
             return jsonify({'status': 'error', 'message': 'unauthorized'}), 401
+        return f(*args, **kwargs)
+    return decorator
+
+
+def inject_request_id(f):
+    """
+    Injects a request_id into the view.
+    """
+    def decorator(*args, **kwargs):
+        request.request_id = str(uuid.uuid4())
         return f(*args, **kwargs)
     return decorator
 

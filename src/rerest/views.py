@@ -24,7 +24,8 @@ from flask import current_app, jsonify, json, request, g
 from flask.views import MethodView
 
 from rerest import mq
-from rerest.decorators import remote_user_required, require_database
+from rerest.decorators import (
+    remote_user_required, require_database, inject_request_id)
 from rerest.validators import validate_playbook
 
 
@@ -32,19 +33,17 @@ class V0DeploymentAPI(MethodView):
 
     methods = ['POST']
     #: Decorators to be applied to all API methods in this class.
-    decorators = [remote_user_required]
+    decorators = [remote_user_required, inject_request_id]
 
     def put(self, project):
         """
         Creates a new deployment.
         """
         try:
-            request_id = str(uuid.uuid4())
-
             user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
             current_app.logger.info(
                 'Starting release for %s as %s for user %s' % (
-                    project, request_id, user))
+                    project, request.request_id, user))
             mq_data = current_app.config['MQ']
             jc = mq.JobCreator(
                 server=mq_data['SERVER'],
@@ -53,7 +52,7 @@ class V0DeploymentAPI(MethodView):
                 password=mq_data['PASSWORD'],
                 vhost=mq_data['VHOST'],
                 logger=current_app.logger,
-                request_id=request_id
+                request_id=request.request_id
             )
             current_app.logger.info('Creating job for project %s' % project)
             #                      Here we are passing json if there is any
@@ -73,39 +72,40 @@ class V0DeploymentAPI(MethodView):
             jc.create_job(project, dynamic=dynamic)
             confirmation_id = jc.get_confirmation(project)
             current_app.logger.debug(
-                'Confirmation id received for request id %s' % request_id)
+                'Confirmation id received for request id %s' % (
+                    request.request_id))
             if confirmation_id is None:
                 current_app.logger.debug(
                     'Confirmation for %s was None meaning the '
                     'project does not exist. request id %s' % (
-                        project, request_id))
+                        project, request.request_id))
                 current_app.logger.info(
                     'Bus could not find project for request id %s' % (
-                        request_id))
+                        request.request_id))
                 return jsonify({
                     'status': 'error',
                     'message': 'project not found'}), 404
 
             current_app.logger.debug(
                 'Confirmation for %s is %s. request id %s' % (
-                    project, confirmation_id, request_id))
+                    project, confirmation_id, request.request_id))
             current_app.logger.info(
                 'Created release as %s for request id %s' % (
-                    confirmation_id, request_id))
+                    confirmation_id, request.request_id))
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
         except KeyError, kex:
             current_app.logger.error(
                 'Error creating job for %s. Missing '
                 'something in the MQ config section? %s: %s. '
                 'Request id: %s' % (
-                    project, type(kex).__name__, kex, request_id))
+                    project, type(kex).__name__, kex, request.request_id))
         except Exception, ex:
             # As there is a lot of other possible network related exceptions
             # this catch all seems to make sense.
             current_app.logger.error(
                 'Error creating job for %s. %s: %s. '
                 'Request id: %s' % (
-                    project, type(ex).__name__, ex, request_id))
+                    project, type(ex).__name__, ex, request.request_id))
             return jsonify({
                 'status': 'error', 'message': 'unknown error'}), 500
 
@@ -114,20 +114,19 @@ class V0PlaybookAPI(MethodView):
 
     methods = ['GET', 'PUT', 'POST', 'DELETE']
     #: Decorators to be applied to all API methods in this class.
-    decorators = [remote_user_required, require_database]
+    decorators = [remote_user_required, require_database, inject_request_id]
 
     def get(self, project, id=None):
         """
         Gets a list or single playbook and returns it to the requestor.
         """
-        request_id = str(uuid.uuid4())
 
         if id is None:
             # List playbooks
             current_app.logger.debug(
                 'Listing known playbooks for project %s. '
                 'Request id: %s' % (
-                    project, request_id))
+                    project, request.request_id))
 
             playbooks = g.db.re.playbooks.find({"project": str(project)})
             items = []
@@ -146,7 +145,7 @@ class V0PlaybookAPI(MethodView):
         current_app.logger.debug(
             'Listing known playbook %s for project %s. '
             'Request id: %s' % (
-                id, project, request_id))
+                id, project, request.request_id))
 
         playbook["id"] = str(playbook["_id"])
         del playbook["_id"]
@@ -156,13 +155,11 @@ class V0PlaybookAPI(MethodView):
         """
         Creates a new playbook for a project.
         """
-        request_id = str(uuid.uuid4())
-
         user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
         current_app.logger.info(
             'Creating a new playbook for project %s by user %s. '
             'Request id: %s' % (
-                project, request_id, user))
+                project, user, request.request_id))
 
         playbook = json.loads(request.data)
         try:
@@ -178,13 +175,11 @@ class V0PlaybookAPI(MethodView):
         """
         Replaces a playbook for a project.
         """
-        request_id = str(uuid.uuid4())
-
         user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
         current_app.logger.info(
             'Updating a playbook for project %s by user %s. '
             'Request id: %s' % (
-                project, request_id, user))
+                project, request.request_id, user))
         try:
             oid = ObjectId(id)
         except InvalidId:
@@ -207,7 +202,6 @@ class V0PlaybookAPI(MethodView):
         """
         Deletes a playbook.
         """
-        request_id = str(uuid.uuid4())
         user = request.environ.get('REMOTE_USER', 'ANONYMOUS')
 
         try:
@@ -218,7 +212,7 @@ class V0PlaybookAPI(MethodView):
         current_app.logger.info(
             'Deleting playbook %s for project %s by user %s. '
             'Request id: %s' % (
-                id, project, request_id, user))
+                id, project, request.request_id, user))
         exists = g.db.re.playbooks.find_one({"_id": oid})
         if exists:
             g.db.re.playbooks.remove({"_id": oid})
