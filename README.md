@@ -76,6 +76,17 @@ Creates a new deployment.
 * **Input Format**: None
 * **Inputs**: optional json
 
+### /api/v0/playbooks/
+
+#### GET
+Gets a list of **all** playbooks.
+
+* **Response Type**: json
+* **Response Example**: ```{"status": "ok", "items": [...]}```
+* **Input Format**: None
+* **Inputs**: None
+
+
 ### /api/v0/*$PROJECT*/playbook/
 
 #### GET

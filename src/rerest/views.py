@@ -115,7 +115,7 @@ class V0PlaybookAPI(MethodView):
     #: Decorators to be applied to all API methods in this class.
     decorators = [remote_user_required, require_database, inject_request_id]
 
-    def get(self, project, id=None):
+    def get(self, project=None, id=None):
         """
         Gets a list or single playbook and returns it to the requestor.
         """
@@ -127,7 +127,10 @@ class V0PlaybookAPI(MethodView):
                 'Request id: %s' % (
                     request.remote_user, project, request.request_id))
 
-            playbooks = g.db.re.playbooks.find({"project": str(project)})
+            if project is None:
+                playbooks = g.db.re.playbooks.find()
+            else:
+                playbooks = g.db.re.playbooks.find({"project": str(project)})
             items = []
             for item in playbooks:
                 item["id"] = str(item["_id"])
@@ -225,6 +228,10 @@ def make_routes(app):
 
     app.add_url_rule('/api/v0/<project>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
+
+    app.add_url_rule('/api/v0/playbooks/',
+                     view_func=playbook_api_view, methods=[
+                         'GET'])
 
     app.add_url_rule('/api/v0/<project>/playbook/',
                      view_func=playbook_api_view, methods=[

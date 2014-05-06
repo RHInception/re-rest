@@ -91,6 +91,19 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert result['status'] == 'ok'
                 assert type(result['items']) == list
 
+            # Check listing ALL playbooks
+            with self.test_client() as c:
+                response = c.get(
+                    '/api/v0/playbooks/',
+                    environ_overrides={'REMOTE_USER': 'testuser'})
+
+                assert response.status_code == 200
+                assert response.mimetype == 'application/json'
+                result = json.loads(response.data)
+                assert result['status'] == 'ok'
+                assert type(result['items']) == list
+
+
             # Check with bad input
             with self.test_client() as c:
                 response = c.get('/api/v0//playbook/')
