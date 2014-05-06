@@ -170,7 +170,7 @@ class V0PlaybookAPI(MethodView):
 
             return jsonify({'status': 'created', 'id': str(id)}), 201
         except KeyError, ke:
-            return jsonify({'status': 'bad request', 'message': str(ke)})
+            return jsonify({'status': 'bad request', 'message': str(ke)}), 400
 
     def post(self, project, id):
         """
@@ -194,7 +194,8 @@ class V0PlaybookAPI(MethodView):
                 g.db.re.playbooks.update({"_id": oid}, playbook)
                 return jsonify({'status': 'ok', 'id': str(exists['_id'])}), 200
             except KeyError, ke:
-                return jsonify({'status': 'bad request', 'message': str(ke)})
+                return jsonify({
+                    'status': 'bad request', 'message': str(ke)}), 400
 
         return jsonify({'status': 'not found'}), 404
 
