@@ -44,29 +44,7 @@ You can override the location by setting `REREST_CONFIG` environment variable.
 Further configuration items can be found at http://flask.pocoo.org/docs/config/#builtin-configuration-values or look at specific AUTHORIZATION\_CALLABLE documentation.
 
 ### Example Config
-
-```json
-{
-    "DEBUG": true,
-    "PREFERRED_URL_SCHEME": "https",
-    "LOGGER_NAME": "rerest",
-    "LOGFILE": "rerest.log",
-    "MQ": {
-        "SERVER": "127.0.0.1",
-        "PORT": 5672,
-        "USER": "guest",
-        "PASSWORD": "guest",
-        "VHOST": "/"
-    },
-    "MONGODB_SETTINGS": {
-        "DB": "re",
-        "USERNAME": "username",
-        "PASSWORD": "password",
-        "HOST": "127.0.0.1",
-        "PORT": 27017
-    }
-}
-```
+See http://github.com/RHInception/re-rest/blob/master/example-settings.json
 
 ## URLs
 ### /api/v0/*$PROJECT*/deployment/
