@@ -21,24 +21,27 @@ Configuration of the server is done in JSON and is by default kept in the curren
 
 You can override the location by setting `REREST_CONFIG` environment variable.
 
-| Name              | Type | Parent            | Value                                      |
-|-------------------|------|-------------------|--------------------------------------------|
-| LOGFILE           | str  | None              | File name for the application level log    |
-| LOGLEVEL          | str  | None              | DEBUG, INFO (default), WARN, FATAL         |
-| MQ                | dict | None              | Where all of the MQ connection settins are |
-| SERVER            | str  | MQ                | Hostname or IP of the server               |
-| PORT              | int  | MQ                | Port to connect on                         |
-| USER              | str  | MQ                | Username to connect with                   |
-| PASSWORD          | str  | MQ                | Password to authenticate with              |
-| VHOST             | str  | MQ                | vhost on the server to utilize             |
-| MONGODB\_SETTINGS | dict | None              | Where all of the MongoDB settings live     |
-| DB                | str  | MONGODB\_Settings | Name of the database to use                |
-| USERNAME          | str  | MONGODB\_Settings | Username to auth with                      |
-| Password          | str  | MONGODB\_Settings | Password to auth with                      |
-| HOST              | str  | MONGODB\_Settings | Host to connect to                         |
-| PORT              | int  | MONGODB\_Settings | Port to connect to on the host             |
+| Name                    | Type | Parent            | Value                                      |
+|-------------------------|------|-------------------|--------------------------------------------|
+| LOGFILE                 | str  | None              | File name for the application level log    |
+| LOGLEVEL                | str  | None              | DEBUG, INFO (default), WARN, FATAL         |
+| MQ                      | dict | None              | Where all of the MQ connection settins are |
+| SERVER                  | str  | MQ                | Hostname or IP of the server               |
+| PORT                    | int  | MQ                | Port to connect on                         |
+| USER                    | str  | MQ                | Username to connect with                   |
+| PASSWORD                | str  | MQ                | Password to authenticate with              |
+| VHOST                   | str  | MQ                | vhost on the server to utilize             |
+| MONGODB\_SETTINGS       | dict | None              | Where all of the MongoDB settings live     |
+| DB                      | str  | MONGODB\_Settings | Name of the database to use                |
+| USERNAME                | str  | MONGODB\_Settings | Username to auth with                      |
+| Password                | str  | MONGODB\_Settings | Password to auth with                      |
+| HOST                    | str  | MONGODB\_Settings | Host to connect to                         |
+| PORT                    | int  | MONGODB\_Settings | Port to connect to on the host             |
+| AUTHORIZATION\_CALLABLE | str  | None              | module.location:callable. Eg: "rerest.authorization:no\_authorization" |
+| AUTHORIZATION\_CONFIG   | dict | None              | Authorization callable specific configuration items |
 
-Further configuration items can be found at http://flask.pocoo.org/docs/config/#builtin-configuration-values
+
+Further configuration items can be found at http://flask.pocoo.org/docs/config/#builtin-configuration-values or look at specific AUTHORIZATION\_CALLABLE documentation.
 
 ### Example Config
 
@@ -154,6 +157,31 @@ re-rest uses a simple decorater which enforces a REMOTE\_USER be set.
 This decorator assumes that re-rest is running behind another web server which is taking care of authentication. If REMOTE\_USER is passed to re-rest from the web server re-rest assumes authentication has succeeded. If it is not passed through re-rest treats the users as unauthenticated.
 
 **WARNING**: When using this decorator it is very important that re-rest not be reachable by any means other than through the front end webserver!!
+
+## Authorization
+re-rest uses a decorator which keys off the AUTHORIZATION\_CALLABLE configuration parameters.
+
+
+### rerest.authroziation.no\_authorization
+
+**This should not be used in a production environment**
+
+To use this callable set AUTHORIZATION\_CALLABLE to `rerest.authorization:no\_authorization`.
+
+
+### rerest.authroziation.ldap\_search
+To use this callable set AUTHORIZATION\_CALLABLE to `rerest.authorization:ldap\_search` and set the following items
+in your configuration file.
+
+| Name              | Type | Parent                | Value                                                       |
+|-------------------|------|-----------------------|-------------------------------------------------------------|
+| LDAP_URI          | str  | AUTHORIZATION\_CONFIG | A full ldap URI such as ldaps://127.0.0.1                   |
+| LDAP_USER         | str  | AUTHORIZATION\_CONFIG | User to bind with                                           |
+| LDAP_PASSWORD     | str  | AUTHORIZATION\_CONFIG | Password to bind with                                       |
+| LDAP_SEARCH_BASE  | str  | AUTHORIZATION\_CONFIG | Search base for all queries. Ex: dc=example,dc=com          |
+| LDAP_FIELD_MATCH  | str  | AUTHORIZATION\_CONFIG | What field to use against the lookup table                  |
+| LDAP_LOOKUP_TABLE | dict | AUTHORIZATION\_CONFIG | key: list table of LDAP_FIELD_MATCH items to allowed groups |
+
 
 
 ### Platform Gotcha's

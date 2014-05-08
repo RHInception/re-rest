@@ -23,7 +23,7 @@ from flask.views import MethodView
 
 from rerest import mq
 from rerest.decorators import (
-    remote_user_required, require_database, inject_request_id)
+    remote_user_required, require_database, inject_request_id, check_group)
 from rerest.validators import validate_playbook
 
 
@@ -31,7 +31,7 @@ class V0DeploymentAPI(MethodView):
 
     methods = ['POST']
     #: Decorators to be applied to all API methods in this class.
-    decorators = [remote_user_required, inject_request_id]
+    decorators = [remote_user_required, check_group, inject_request_id]
 
     def put(self, project):
         """
@@ -111,7 +111,8 @@ class V0PlaybookAPI(MethodView):
 
     methods = ['GET', 'PUT', 'POST', 'DELETE']
     #: Decorators to be applied to all API methods in this class.
-    decorators = [remote_user_required, require_database, inject_request_id]
+    decorators = [
+        remote_user_required, check_group, require_database, inject_request_id]
 
     def get(self, project=None, id=None):
         """

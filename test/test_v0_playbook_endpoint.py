@@ -103,7 +103,6 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert result['status'] == 'ok'
                 assert type(result['items']) == list
 
-
             # Check with bad input
             with self.test_client() as c:
                 response = c.get('/api/v0//playbook/')

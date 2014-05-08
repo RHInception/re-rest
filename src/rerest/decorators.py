@@ -25,10 +25,33 @@ def remote_user_required(f):
     """
     Ensures a user has authenticated with the proxy.
     """
+
     def decorator(*args, **kwargs):
         if not request.remote_user:
             return jsonify({'status': 'error', 'message': 'unauthorized'}), 401
         return f(*args, **kwargs)
+    return decorator
+
+
+def check_group(f):
+    """
+    Ensures a user is part of a required group. Needs remote_user_required!
+    """
+
+    def decorator(*args, **kwargs):
+        # Load the callable
+        mod, meth = current_app.config['AUTHORIZATION_CALLABLE'].split(':')
+        check_auth = getattr(__import__(mod, fromlist=['True']), meth)
+
+        if check_auth(request.remote_user, request.view_args):
+            current_app.logger.debug(
+                'User %s successfully authenticated for %s' % (
+                    request.remote_user, request.path))
+            return f(*args, **kwargs)
+        current_app.logger.debug(
+            'User %s failed authentication for %s' % (
+                request.remote_user, request.path))
+        return jsonify({'status': 'error', 'message': 'forbidden'}), 403
     return decorator
 
 
