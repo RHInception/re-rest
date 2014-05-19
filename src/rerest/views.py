@@ -19,11 +19,11 @@ import yaml
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from flask import current_app, jsonify, json, request, g
+from flask import current_app, jsonify, json, request, g, Response
 
 from flask.views import MethodView
 
-from rerest import mq
+from rerest import mq, serialize
 from rerest.decorators import (
     remote_user_required, require_database, inject_request_id, check_group)
 from rerest.validators import validate_playbook
@@ -120,6 +120,9 @@ class V0PlaybookAPI(MethodView):
         """
         Gets a list or single playbook and returns it to the requestor.
         """
+        # Serializer so we can handle json and yaml
+        serializer = serialize.Serialize(request.args.get(
+            'format', 'json'))
 
         if id is None:
             # List playbooks
@@ -137,7 +140,10 @@ class V0PlaybookAPI(MethodView):
                 item["id"] = str(item["_id"])
                 del item["_id"]
                 items.append(item)
-            return jsonify({'status': 'ok', 'items': items}), 200
+            return Response(
+                response=serializer.dump({'status': 'ok', 'items': items}),
+                status=200,
+                mimetype=serializer.mimetype)
 
         # One playbook
         playbook = g.db.re.playbooks.find_one({
@@ -158,25 +164,35 @@ class V0PlaybookAPI(MethodView):
         """
         Creates a new playbook for a project.
         """
+        # Serializer so we can handle json and yaml
+        serializer = serialize.Serialize(request.args.get(
+            'format', 'json'))
+
+        # Gets the formatter info
         current_app.logger.info(
             'Creating a new playbook for project %s by user %s. '
             'Request id: %s' % (
                 project, request.remote_user, request.request_id))
 
-        playbook = json.loads(request.data)
         try:
+            playbook = serializer.load(request.data)
             validate_playbook(playbook)
             playbook["project"] = str(project)
             id = g.db.re.playbooks.insert(playbook)
 
             return jsonify({'status': 'created', 'id': str(id)}), 201
-        except KeyError, ke:
-            return jsonify({'status': 'bad request', 'message': str(ke)}), 400
+        except (KeyError, ValueError), ke:
+            return jsonify(
+                {'status': 'bad request', 'message': str(ke)}), 400
 
     def post(self, project, id):
         """
         Replaces a playbook for a project.
         """
+        # Serializer so we can handle json and yaml
+        serializer = serialize.Serialize(request.args.get(
+            'format', 'json'))
+
         current_app.logger.info(
             'Updating a playbook for project %s by user %s. '
             'Request id: %s' % (
@@ -184,17 +200,22 @@ class V0PlaybookAPI(MethodView):
         try:
             oid = ObjectId(id)
         except InvalidId:
-            return jsonify({'status': 'bad request', 'message': 'Bad id'}), 400
+            return Response(
+                response=serializer.dump(
+                    {'status': 'bad request', 'message': 'Bad id'}),
+                status=400,
+                mimetype=serializer.mimetype)
 
         exists = g.db.re.playbooks.find_one({"_id": oid})
         if exists:
-            playbook = json.loads(request.data)
-            playbook["project"] = str(project)
             try:
+                playbook = serializer.load(request.data)
+                playbook["project"] = str(project)
                 validate_playbook(playbook)
                 g.db.re.playbooks.update({"_id": oid}, playbook)
-                return jsonify({'status': 'ok', 'id': str(exists['_id'])}), 200
-            except KeyError, ke:
+                return jsonify({
+                    'status': 'ok', 'id': str(exists['_id'])}), 200
+            except (KeyError, ValueError), ke:
                 return jsonify({
                     'status': 'bad request', 'message': str(ke)}), 400
 
@@ -204,7 +225,8 @@ class V0PlaybookAPI(MethodView):
         """
         Deletes a playbook.
         """
-
+        # NOTE: there is now format parameter since this doesn't accept or
+        #       return a playbook.
         try:
             oid = ObjectId(id)
         except InvalidId:

@@ -16,10 +16,11 @@
 Unittests.
 """
 
-import json
+import yaml
 import mock
+
 from bson import ObjectId
-from flask import request, json, g
+from flask import request, json, g, json
 
 from . import TestCase, unittest
 
@@ -143,11 +144,10 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert self._check_unauth_response(c.get(
                     '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/'))
 
-    def test_create_playbook(self):
+    def test_create_playbook_json(self):
         """
-        Test creating a new playbook.
+        Test creating a new playbook using json.
         """
-
         with db_ctx(app):
             # Check with good input
             with self.test_client() as c:
@@ -163,6 +163,30 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert result['status'] == 'created'
                 assert result['id'] == '53614ccf1370129d6f29c7dd'
 
+    def test_create_playbook_yaml(self):
+        """
+        Test creating a new playbook using YAML.
+        """
+        with db_ctx(app):
+            # Check with good input
+            with self.test_client() as c:
+                response = c.put(
+                    '/api/v0/test/playbook/?format=yaml',
+                    data=yaml.dump(PLAYBOOK),
+                    environ_overrides={'REMOTE_USER': 'testuser'})
+
+                assert request.view_args['project'] == 'test'
+                assert response.status_code == 201
+                assert response.mimetype == 'application/json'
+                result = json.loads(response.data)
+                assert result['status'] == 'created'
+                assert result['id'] == '53614ccf1370129d6f29c7dd'
+
+    def test_create_playbook_expected_failures(self):
+        """
+        Playbook creation should fail with bad input, no user or wrong format.
+        """
+        with db_ctx(app):
             # Check with bad input
             with self.test_client() as c:
                 response = c.put('/api/v0//playbook/')
@@ -173,15 +197,26 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert self._check_unauth_response(c.put(
                     '/api/v0/test/playbook/'))
 
-    def test_update_playbook(self):
+            # Failure should happen if YAML is passed off as JSON
+            with self.test_client() as c:
+                response = c.put(
+                    '/api/v0/test/playbook/?format=json',
+                    data=yaml.dump(PLAYBOOK),
+                    environ_overrides={'REMOTE_USER': 'testuser'})
+                assert response.status_code == 400
+            # NOTE: JSON can be loaded by YAML in this case -- it's structure
+            #       is simplified.
+
+    def test_update_playbook_json(self):
         """
-        Test updating a playbook.
+        Test updating a playbook in json format.
         """
         with db_ctx(app):
             # Check with good input
             with self.test_client() as c:
                 response = c.post(
-                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
+                    '/api/v0/test/playbook/'
+                    '53614ccf1370129d6f29c7dd/?format=json',
                     data=json.dumps(PLAYBOOK),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
@@ -192,6 +227,31 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert result['status'] == 'ok'
                 assert result['id'] == '53614ccf1370129d6f29c7dd'
 
+    def test_update_playbook_yaml(self):
+        """
+        Test updating a playbook in yaml format.
+        """
+        with db_ctx(app):
+            # Check with good input
+            with self.test_client() as c:
+                response = c.post(
+                    '/api/v0/test/playbook/'
+                    '53614ccf1370129d6f29c7dd/?format=yaml',
+                    data=yaml.dump(PLAYBOOK),
+                    environ_overrides={'REMOTE_USER': 'testuser'})
+
+                assert request.view_args['project'] == 'test'
+                assert response.status_code == 200
+                assert response.mimetype == 'application/json'
+                result = json.loads(response.data)
+                assert result['status'] == 'ok'
+                assert result['id'] == '53614ccf1370129d6f29c7dd'
+
+    def test_update_playbook_expected_failures(self):
+        """
+        Playbook creation should fail with bad input, no user or wrong format.
+        """
+        with db_ctx(app):
             # Check with bad input
             with self.test_client() as c:
                 response = c.post(
@@ -207,10 +267,23 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert self._check_unauth_response(c.post(
                     '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/'))
 
+            # Failure should happen if YAML is passed off as JSON
+            with self.test_client() as c:
+                response = c.post(
+                    '/api/v0/test/playbook/'
+                    '53614ccf1370129d6f29c7dd/?format=json',
+                    data=yaml.dump(PLAYBOOK),
+                    environ_overrides={'REMOTE_USER': 'testuser'})
+                assert response.status_code == 400
+            # NOTE: JSON can be loaded by YAML in this case -- it's structure
+            #       is simplified.
+
     def test_delete_playbook(self):
         """
         Test deleting a playbook with a user works.
         """
+        # NOTE: there is now format parameter since this doesn't accept or
+        #       return a playbook.
         with db_ctx(app):
             # Check with good input
             with self.test_client() as c:
