@@ -1,0 +1,31 @@
+
+WSGIScriptAlias / /var/www/yourapplication/rerest.wsgi
+
+<Location />
+    AuthName "Release Engine SSL Service"
+    AuthType Kerberos
+    KrbMethodNegotiate On
+    KrbMethodK5Passwd On
+    KrbServiceName Any
+    KrbAuthRealms EXAMPLE.COM
+    Krb5KeyTab /var/www/yourapplication/HTTP-yourapplication.example.com.keytab
+    require valid-user
+    #KrbLocalUserMapping On
+    Order Deny,Allow
+    Deny from all
+    Satisfy any
+</Location>
+
+<VirtualHost *:443>
+  ServerName yourapplication.example.com
+  # ServerAlias is to make sure "localhost" traffic goes here regardless.
+  ServerAlias localhost
+  ServerAdmin root@localhost
+  DocumentRoot /var/www/yourapplication
+  RewriteEngine On
+  SSLEngine on
+  SSLCertificateFile /etc/pki/tls/certs/localhost.crt
+  SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
+  RequestHeader set X_FORWARDED_PROTO 'https'
+  RequestHeader set Front-End-Https "On"
+</VirtualHost>
