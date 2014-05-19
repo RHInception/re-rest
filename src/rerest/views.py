@@ -15,6 +15,8 @@
 """
 Views.
 """
+import yaml
+
 from bson import ObjectId
 from bson.errors import InvalidId
 from flask import current_app, jsonify, json, request, g

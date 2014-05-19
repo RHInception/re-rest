@@ -11,7 +11,7 @@ Source0:        rerest-%{version}.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  python-devel, python-pip
-Requires:       python-flask>=0.9, python-pika>=0.9.12, python-pymongo, python-blinker, python-ldap
+Requires:       python-flask>=0.9, python-pika>=0.9.12, python-pymongo, python-blinker, python-ldap, PyYAML
 
 
 %description
@@ -40,6 +40,9 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Mon May 19 2014 Steve Milner <stevem@gnulinux.net>- 0.0.3-1
+- PyYAML is now needed.
+
 * Thu Mar  1 2014 Steve Milner <stevem@gnulinux.net>- 0.0.2-1
 - Mongo support.
 
