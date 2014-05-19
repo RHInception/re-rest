@@ -45,7 +45,6 @@ class Serialize(object):
         """
         if self.format == 'yaml':
             try:
-                print data
                 return yaml.safe_load(data)
             except yaml.parser.ParserError, pe:
                 raise ValueError(str(pe))
