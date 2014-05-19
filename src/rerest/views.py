@@ -140,10 +140,10 @@ class V0PlaybookAPI(MethodView):
                 item["id"] = str(item["_id"])
                 del item["_id"]
                 items.append(item)
-            return Response(
-                response=serializer.dump({'status': 'ok', 'items': items}),
-                status=200,
-                mimetype=serializer.mimetype)
+#            return Response(
+            return jsonify({'status': 'ok', 'items': items}), 200
+#                status=200,
+#                mimetype=serializer.mimetype)
 
         # One playbook
         playbook = g.db.re.playbooks.find_one({
@@ -158,7 +158,10 @@ class V0PlaybookAPI(MethodView):
 
         playbook["id"] = str(playbook["_id"])
         del playbook["_id"]
-        return jsonify({'status': 'ok', 'item': playbook}), 200
+        return Response(
+            response=serializer.dump({'status': 'ok', 'item': playbook}),
+            status=200,
+            mimetype=serializer.mimetype)
 
     def put(self, project):
         """
