@@ -282,7 +282,7 @@ class TestV0PlaybookEndpoint(TestCase):
         """
         Test deleting a playbook with a user works.
         """
-        # NOTE: there is now format parameter since this doesn't accept or
+        # NOTE: This is a new format parameter since this doesn't accept or
         #       return a playbook.
         with db_ctx(app):
             # Check with good input
