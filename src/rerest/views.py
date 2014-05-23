@@ -29,11 +29,11 @@ from rerest.validators import validate_playbook
 
 class V0DeploymentAPI(MethodView):
 
-    methods = ['POST']
+    methods = ['PUT']
     #: Decorators to be applied to all API methods in this class.
     decorators = [remote_user_required, check_group, inject_request_id]
 
-    def put(self, project):
+    def put(self, project, id):
         """
         Creates a new deployment.
         """
@@ -51,22 +51,22 @@ class V0DeploymentAPI(MethodView):
                 logger=current_app.logger,
                 request_id=request.request_id
             )
-            current_app.logger.info('Creating job for project %s' % project)
-            #                      Here we are passing json if there is any
-            #                      or returning None otherwise (silent=True)
+            current_app.logger.info(
+                'Creating job for project %s, playbook %s' % (
+                    project, id))
             try:
                 dynamic = json.loads(request.data)
                 # If we got nothing then raise (to catch)
                 if dynamic is None:
                     raise ValueError('No data')
             except ValueError:
-                current_app.logger.debug('No data sent in request for dynamic'
-                                         'variables.')
+                current_app.logger.debug(
+                    'No data sent in request for dynamic variables.')
                 dynamic = {}
             current_app.logger.info(
                 "Received dynamic keys: %s" % (
                     str(dynamic)))
-            jc.create_job(project, dynamic=dynamic)
+            jc.create_job(project, id, dynamic=dynamic)
             confirmation_id = jc.get_confirmation(project)
             current_app.logger.debug(
                 'Confirmation id received for request id %s' % (
@@ -84,25 +84,25 @@ class V0DeploymentAPI(MethodView):
                     'message': 'project not found'}), 404
 
             current_app.logger.debug(
-                'Confirmation for %s is %s. request id %s' % (
-                    project, confirmation_id, request.request_id))
+                'Confirmation for %s/%s is %s. request id %s' % (
+                    project, id, confirmation_id, request.request_id))
             current_app.logger.info(
                 'Created release as %s for request id %s' % (
                     confirmation_id, request.request_id))
             return jsonify({'status': 'created', 'id': confirmation_id}), 201
         except KeyError, kex:
             current_app.logger.error(
-                'Error creating job for %s. Missing '
+                'Error creating job for %s/%s. Missing '
                 'something in the MQ config section? %s: %s. '
                 'Request id: %s' % (
-                    project, type(kex).__name__, kex, request.request_id))
+                    project, id, type(kex).__name__, kex, request.request_id))
         except Exception, ex:
             # As there is a lot of other possible network related exceptions
             # this catch all seems to make sense.
             current_app.logger.error(
-                'Error creating job for %s. %s: %s. '
+                'Error creating job for %s/%s. %s: %s. '
                 'Request id: %s' % (
-                    project, type(ex).__name__, ex, request.request_id))
+                    project, id, type(ex).__name__, ex, request.request_id))
             return jsonify({
                 'status': 'error', 'message': 'unknown error'}), 500
 
@@ -251,7 +251,7 @@ def make_routes(app):
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
     playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
 
-    app.add_url_rule('/api/v0/<project>/deployment/',
+    app.add_url_rule('/api/v0/<project>/playbook/<id>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
 
     app.add_url_rule('/api/v0/playbooks/',

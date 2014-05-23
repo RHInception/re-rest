@@ -77,12 +77,14 @@ class JobCreator(object):
                 self._tmp_q.method.queue, self.request_id))
 
     def create_job(
-            self, project, dynamic=None, exchange='re', topic='job.create'):
+            self, project, playbook_id, dynamic=None,
+            exchange='re', topic='job.create'):
         """
         Emits a message notifying the FSM that a release job needs
         to be created.
 
         project is the name of the project
+        playbook_id is the playbook_id id to use
         dynamic is a dictionary of dynamic elements to pass through
         exchange is the MQ exchange to emit on. Default: re
         topic is the MQ topic to emit on. Default: job.create
@@ -91,20 +93,23 @@ class JobCreator(object):
         properties = pika.spec.BasicProperties()
         properties.reply_to = self._tmp_q.method.queue
 
-        self.logger.info('Creating a job for project %s using exchange '
+        self.logger.info('Creating a job for project %s/%s using exchange '
                          '%s and topic %s. Temp queue name is %s '
                          'for request id %s' % (
-                             project, exchange, topic,
+                             project, playbook_id, exchange, topic,
                              self._tmp_q.method.queue, self.request_id))
 
         try:
             # Send the message
             self.logger.debug(
-                'Sending job request for project %s using exchange '
+                'Sending job request for project %s/%s using exchange '
                 '%s and topic %s for request id %s' % (
-                    project, exchange, topic, self.request_id))
+                    project, playbook_id, exchange, topic, self.request_id))
 
-            msg = {'project': project}
+            msg = {
+                'project': project,
+                'playbook_id': playbook_id,
+            }
 
             if dynamic and type(dynamic) is dict:
                 msg['dynamic'] = dynamic

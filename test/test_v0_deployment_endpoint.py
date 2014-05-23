@@ -48,9 +48,10 @@ class TestV0DeploymentEndpoint(TestCase):
         # Check with good input
         with self.test_client() as c:
             response = c.put(
-                '/api/v0/test/deployment/',
+                '/api/v0/test/deployment/12345/',
                 environ_overrides={'REMOTE_USER': 'testuser'})
             assert request.view_args['project'] == 'test'
+            assert request.view_args['id'] == '12345'
             assert response.status_code == 201
             assert response.mimetype == 'application/json'
             result = json.loads(response.data)
@@ -69,8 +70,9 @@ class TestV0DeploymentEndpoint(TestCase):
         # Check with good input
         with self.test_client() as c:
             response = c.put(
-                '/api/v0/test/deployment/')
+                '/api/v0/test/deployment/12345/')
             assert request.view_args['project'] == 'test'
+            assert request.view_args['id'] == '12345'
             assert response.status_code == 401
             assert response.mimetype == 'application/json'
             result = json.loads(response.data)

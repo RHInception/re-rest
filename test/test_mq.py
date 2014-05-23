@@ -55,12 +55,12 @@ class TestJobCreator(TestCase):
         """
         jc = mq.JobCreator(
             'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
-        assert jc.create_job('project') is None  # No return value
+        assert jc.create_job('project', '12345') is None  # No return value
         assert jc._channel.basic_publish.call_count == 1
         assert jc._channel.basic_publish.call_args[0][0] == 're'
         assert jc._channel.basic_publish.call_args[0][1] == 'job.create'
         assert jc._channel.basic_publish.call_args[0][2] == (
-            '{"project": "project"}')
+            '{"playbook_id": "12345", "project": "project"}')
 
     def test_get_confirmation(self):
         """
@@ -70,7 +70,7 @@ class TestJobCreator(TestCase):
         jc = mq.JobCreator(
             'server', 5672, 'user', 'pass', 'vhost', logger, 1)
         jc._channel.reset_mock()
-        jc.create_job('project')
+        jc.create_job('project', '12345')
 
         # Perfect world scenario
         jc._channel.consume.return_value = [[
