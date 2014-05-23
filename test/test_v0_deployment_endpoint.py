@@ -48,7 +48,7 @@ class TestV0DeploymentEndpoint(TestCase):
         # Check with good input
         with self.test_client() as c:
             response = c.put(
-                '/api/v0/test/deployment/12345/',
+                '/api/v0/test/playbook/12345/deployment/',
                 environ_overrides={'REMOTE_USER': 'testuser'})
             assert request.view_args['project'] == 'test'
             assert request.view_args['id'] == '12345'
@@ -70,7 +70,7 @@ class TestV0DeploymentEndpoint(TestCase):
         # Check with good input
         with self.test_client() as c:
             response = c.put(
-                '/api/v0/test/deployment/12345/')
+                '/api/v0/test/playbook/12345/deployment/')
             assert request.view_args['project'] == 'test'
             assert request.view_args['id'] == '12345'
             assert response.status_code == 401
