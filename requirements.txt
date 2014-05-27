@@ -1,6 +1,7 @@
 flask>=0.9
 pika>=0.9.12
 pymongo>=0.7.0
+jsonschema
 blinker
 python-ldap
 PyYAML
