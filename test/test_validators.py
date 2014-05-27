@@ -18,6 +18,8 @@ Unittests.
 
 from . import TestCase, unittest
 
+from jsonschema import ValidationError
+
 from rerest.validators import validate_playbook
 
 
@@ -29,39 +31,40 @@ class TestValidators(TestCase):
         if missing
         """
         # A playbook must be a dictionary
-        self.assertRaises(KeyError, validate_playbook, [])
+        self.assertRaises(ValidationError, validate_playbook, [])
 
         # Missing top level keys should raise
-        self.assertRaises(KeyError, validate_playbook, {})
+        self.assertRaises(ValidationError, validate_playbook, {})
         self.assertRaises(
-            KeyError, validate_playbook, {'project': '', 'steps': []})
+            ValidationError, validate_playbook, {'project': '', 'steps': []})
         self.assertRaises(
-            KeyError, validate_playbook, {'project': '', 'ownership': ''})
+            ValidationError, validate_playbook,
+            {'project': '', 'ownership': ''})
         self.assertRaises(
-            KeyError, validate_playbook, {'steps': [], 'ownership': ''})
+            ValidationError, validate_playbook, {'steps': [], 'ownership': ''})
 
         # Steps must have name, plugin and parameters
         self.assertRaises(
-            KeyError,
+            ValidationError,
             validate_playbook,
             {'project': '', 'ownership': '', 'steps': [
                 {'name': '', 'parameters': {}}]})
 
         self.assertRaises(
-            KeyError,
+            ValidationError,
             validate_playbook,
             {'projet': '', 'ownership': '', 'steps': [
                 {'name': '', 'plugin': ''}]})
 
         self.assertRaises(
-            KeyError,
+            ValidationError,
             validate_playbook,
             {'project': '', 'ownership': '', 'steps': [
                 {'plugin': '', 'parameters': {}}]})
 
         # Parameters must be a dict
         self.assertRaises(
-            KeyError,
+            ValidationError,
             validate_playbook,
             {'project': '', 'ownership': '', 'steps': [
                 {'name': '', 'plugin': '', 'parameters': ''}]})

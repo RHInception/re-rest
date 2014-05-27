@@ -16,35 +16,26 @@
 Validation functions.
 """
 
+import jsonschema
 
-def validate_playbook(playbook):
-    """
-    Quick validation of the playbook.
 
-    Raises KeyError on issue.
-    """
-    # TODO: KeyError makes sens for most of the raises but not all...
-    #       Use a new Exception type?
-    # Must be a dictionary
-    if type(playbook) is not dict:
-        raise KeyError('Playbook must be a dictionary')
+PLAYBOOK_SCHEMA = {
+    'type': 'object',
+    'required': ['project', 'ownership', 'steps'],
+    'properties': {
+        'project': {'type': 'string'},
+        'ownership': {
+            'type': 'object',
+            'properties': {
+                'id': {'type': 'string'},
+                'contact': {'type': 'string'},
+            },
+        },
+        'steps': {
+            'type': 'array',
+        },
+    }
+}
 
-    # Must have specific keys at the top level
-    for key in ('project', 'ownership', 'steps'):
-        if key not in playbook.keys():
-            raise KeyError(
-                'Playbook requires the following top level keys: '
-                'project, ownership, steps.')
 
-    # Steps must have specific keys
-    for step in playbook['steps']:
-        for key in ('name', 'plugin', 'parameters'):
-            if key not in step.keys():
-                raise KeyError(
-                    'Playbook steps require the following keys: '
-                    'name, plugin, parameters')
-
-        # Parameters in steps must be a dictionary
-        if type(step['parameters']) is not dict:
-            raise KeyError(
-                'Playbook step parameters must be in a dictionary.')
+validate_playbook = lambda pb: jsonschema.validate(pb, PLAYBOOK_SCHEMA)
