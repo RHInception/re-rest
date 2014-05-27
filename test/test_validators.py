@@ -83,6 +83,8 @@ class TestValidators(TestCase):
         w_steps = top
         w_steps['steps'].append({
             'name': 'step', 'plugin': 'test', 'parameters': {}})
+        w_steps['steps'].append({
+            'name': 'step2', 'plugin': 'test', 'parameters': {}})
         assert validate_playbook(w_steps) is None
 
         w_params = w_steps

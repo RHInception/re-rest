@@ -24,7 +24,7 @@ from flask.views import MethodView
 from rerest import mq, serialize
 from rerest.decorators import (
     remote_user_required, require_database, inject_request_id, check_group)
-from rerest.validators import validate_playbook
+from rerest.validators import validate_playbook, ValidationError
 
 
 class V0DeploymentAPI(MethodView):
@@ -182,7 +182,7 @@ class V0PlaybookAPI(MethodView):
             id = g.db.re.playbooks.insert(playbook)
 
             return jsonify({'status': 'created', 'id': str(id)}), 201
-        except (KeyError, ValueError), ke:
+        except (KeyError, ValueError, ValidationError), ke:
             return jsonify(
                 {'status': 'bad request', 'message': str(ke)}), 400
 
@@ -216,7 +216,7 @@ class V0PlaybookAPI(MethodView):
                 g.db.re.playbooks.update({"_id": oid}, playbook)
                 return jsonify({
                     'status': 'ok', 'id': str(exists['_id'])}), 200
-            except (KeyError, ValueError), ke:
+            except (KeyError, ValueError, ValidationError), ke:
                 return jsonify({
                     'status': 'bad request', 'message': str(ke)}), 400
 

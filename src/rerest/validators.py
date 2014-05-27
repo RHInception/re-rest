@@ -16,9 +16,10 @@
 Validation functions.
 """
 
-import jsonschema
+from jsonschema import ValidationError, validate
 
 
+#: Schema for playbook defined by using json-schema.org syntax.
 PLAYBOOK_SCHEMA = {
     'type': 'object',
     'required': ['project', 'ownership', 'steps'],
@@ -33,9 +34,13 @@ PLAYBOOK_SCHEMA = {
         },
         'steps': {
             'type': 'array',
+            'items': [{
+                'type': 'object',
+                'additionalItems': False,
+                'required': ['name', 'plugin', 'parameters']}],
         },
     }
 }
 
 
-validate_playbook = lambda pb: jsonschema.validate(pb, PLAYBOOK_SCHEMA)
+validate_playbook = lambda pb: validate(pb, PLAYBOOK_SCHEMA)
