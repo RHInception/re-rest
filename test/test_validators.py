@@ -18,7 +18,7 @@ Unittests.
 
 from . import TestCase, unittest
 
-from jsonschema import ValidationError
+from jsonschema import ValidationError, SchemaError
 
 from rerest.validators import validate_playbook
 
@@ -36,58 +36,69 @@ class TestValidators(TestCase):
         # Missing top level keys should raise
         self.assertRaises(ValidationError, validate_playbook, {})
         self.assertRaises(
-            ValidationError, validate_playbook, {'project': '', 'steps': []})
+            ValidationError, validate_playbook, {'group': '', 'execution': []})
         self.assertRaises(
             ValidationError, validate_playbook,
-            {'project': '', 'ownership': ''})
+            {'name': '', 'execution': ''})
         self.assertRaises(
-            ValidationError, validate_playbook, {'steps': [], 'ownership': ''})
+            ValidationError, validate_playbook, {'group': [], 'name': ''})
 
-        # Steps must have name, plugin and parameters
+        # Execution must have description, hosts and steps
         self.assertRaises(
             ValidationError,
             validate_playbook,
-            {'project': '', 'ownership': '', 'steps': [
-                {'name': '', 'parameters': {}}]})
-
-        self.assertRaises(
-            ValidationError,
-            validate_playbook,
-            {'projet': '', 'ownership': '', 'steps': [
-                {'name': '', 'plugin': ''}]})
+            {'name': '', 'group': '', 'execution': [
+                {'description': '', 'hosts': ['']}]})
 
         self.assertRaises(
             ValidationError,
             validate_playbook,
-            {'project': '', 'ownership': '', 'steps': [
-                {'plugin': '', 'parameters': {}}]})
+            {'name': '', 'group': '', 'execution': [
+                {'hosts': [''], 'steps': ['']}]})
 
-        # Parameters must be a dict
         self.assertRaises(
             ValidationError,
             validate_playbook,
-            {'project': '', 'ownership': '', 'steps': [
-                {'name': '', 'plugin': '', 'parameters': ''}]})
+            {'name': '', 'group': '', 'execution': [
+                {'steps': [''], 'description': ''}]})
+
+        # There must be at least 1 step and 1 host
+        self.assertRaises(
+            ValidationError,
+            validate_playbook,
+            {'name': '', 'group': '', 'execution': [
+                {'steps': [''], 'description': '', 'hosts': []}]})
+
+        self.assertRaises(
+            ValidationError,
+            validate_playbook,
+            {'name': '', 'group': '', 'execution': [
+                {'steps': [], 'description': '', 'hosts': ['']}]})
 
     def test_validate_playbook_with_good_data(self):
         """
         Verify validate_playbook does not raise when good data is passed in
         """
         top = {
-            'project': 'p',
-            'ownership': {'id': 'my team', 'contact': 'me@example.com'},
-            'steps': [],
+            'group': 'p',
+            'name': 'myplaybook',
+            'execution': [{
+                'description': 'something',
+                'hosts': ['127.0.0.1'],
+                'steps': [{"service.Restart": {"service": "httpd"}}]
+            }]
+
         }
         assert validate_playbook(top) is None
 
         w_steps = top
-        w_steps['steps'].append({
-            'name': 'step', 'plugin': 'test', 'parameters': {}})
-        w_steps['steps'].append({
-            'name': 'step2', 'plugin': 'test', 'parameters': {}})
-        assert validate_playbook(w_steps) is None
+        # Additional bjects as steps should be valid
+        w_steps['execution'].append({
+            'description': 'second',
+            'hosts': ['127.0.0.1'],
+            'steps': [{"service.Restart": {"service": "httpd"}}]})
 
-        w_params = w_steps
-        w_params['steps'][0]['parameters'] = {
-            'command': 'ls', 'something': 'else'}
-        assert validate_playbook(w_params) is None
+        # A string as a step should be valid
+        w_steps['execution'][0]['steps'].append("do.SomethingAsString")
+
+        assert validate_playbook(w_steps) is None

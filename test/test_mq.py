@@ -55,12 +55,12 @@ class TestJobCreator(TestCase):
         """
         jc = mq.JobCreator(
             'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
-        assert jc.create_job('project', '12345') is None  # No return value
+        assert jc.create_job('group', '12345') is None  # No return value
         assert jc._channel.basic_publish.call_count == 1
         assert jc._channel.basic_publish.call_args[0][0] == 're'
         assert jc._channel.basic_publish.call_args[0][1] == 'job.create'
-        assert jc._channel.basic_publish.call_args[0][2] == (
-            '{"playbook_id": "12345", "project": "project"}')
+        assert json.loads(jc._channel.basic_publish.call_args[0][2]) == (
+            {"playbook_id": "12345", "group": "group"})
 
     def test_get_confirmation(self):
         """
@@ -70,7 +70,7 @@ class TestJobCreator(TestCase):
         jc = mq.JobCreator(
             'server', 5672, 'user', 'pass', 'vhost', logger, 1)
         jc._channel.reset_mock()
-        jc.create_job('project', '12345')
+        jc.create_job('group', '12345')
 
         # Perfect world scenario
         jc._channel.consume.return_value = [[
@@ -80,7 +80,7 @@ class TestJobCreator(TestCase):
 
         logger.reset_mock()
         debug_count = logger.debug.call_count
-        assert jc.get_confirmation('project') == 10
+        assert jc.get_confirmation('group') == 10
         assert logger.debug.call_count > debug_count
 
         logger.reset_mock()
@@ -92,7 +92,7 @@ class TestJobCreator(TestCase):
             mock.Mock(delivery_tag=1),
             'not json data so it will error']]
 
-        jc.get_confirmation('project')
+        jc.get_confirmation('group')
         assert jc._channel.basic_reject.call_count == 1
         assert logger.error.call_count == 1
 
@@ -100,12 +100,12 @@ class TestJobCreator(TestCase):
         jc._channel.reset_mock()
 
         jc._channel.basic_ack.side_effect = pika.exceptions.ChannelClosed
-        jc.get_confirmation('project')
+        jc.get_confirmation('group')
         assert logger.error.call_count == 1
 
         logger.reset_mock()
         jc._channel.reset_mock()
 
         jc._channel.basic_ack.side_effect = ValueError
-        jc.get_confirmation('project')
+        jc.get_confirmation('group')
         assert logger.error.call_count == 1

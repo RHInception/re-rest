@@ -33,14 +33,14 @@ class V0DeploymentAPI(MethodView):
     #: Decorators to be applied to all API methods in this class.
     decorators = [remote_user_required, check_group, inject_request_id]
 
-    def put(self, project, id):
+    def put(self, group, id):
         """
         Creates a new deployment.
         """
         try:
             current_app.logger.info(
                 'Starting release for %s as %s for user %s' % (
-                    project, request.request_id, request.remote_user))
+                    group, request.request_id, request.remote_user))
             mq_data = current_app.config['MQ']
             jc = mq.JobCreator(
                 server=mq_data['SERVER'],
@@ -52,8 +52,8 @@ class V0DeploymentAPI(MethodView):
                 request_id=request.request_id
             )
             current_app.logger.info(
-                'Creating job for project %s, playbook %s' % (
-                    project, id))
+                'Creating job for group %s, playbook %s' % (
+                    group, id))
             try:
                 dynamic = json.loads(request.data)
                 # If we got nothing then raise (to catch)
@@ -66,26 +66,26 @@ class V0DeploymentAPI(MethodView):
             current_app.logger.info(
                 "Received dynamic keys: %s" % (
                     str(dynamic)))
-            jc.create_job(project, id, dynamic=dynamic)
-            confirmation_id = jc.get_confirmation(project)
+            jc.create_job(group, id, dynamic=dynamic)
+            confirmation_id = jc.get_confirmation(group)
             current_app.logger.debug(
                 'Confirmation id received for request id %s' % (
                     request.request_id))
             if confirmation_id is None:
                 current_app.logger.debug(
                     'Confirmation for %s was None meaning the '
-                    'project does not exist. request id %s' % (
-                        project, request.request_id))
+                    'group does not exist. request id %s' % (
+                        group, request.request_id))
                 current_app.logger.info(
-                    'Bus could not find project for request id %s' % (
+                    'Bus could not find group for request id %s' % (
                         request.request_id))
                 return jsonify({
                     'status': 'error',
-                    'message': 'project not found'}), 404
+                    'message': 'group not found'}), 404
 
             current_app.logger.debug(
                 'Confirmation for %s/%s is %s. request id %s' % (
-                    project, id, confirmation_id, request.request_id))
+                    group, id, confirmation_id, request.request_id))
             current_app.logger.info(
                 'Created release as %s for request id %s' % (
                     confirmation_id, request.request_id))
@@ -95,14 +95,14 @@ class V0DeploymentAPI(MethodView):
                 'Error creating job for %s/%s. Missing '
                 'something in the MQ config section? %s: %s. '
                 'Request id: %s' % (
-                    project, id, type(kex).__name__, kex, request.request_id))
+                    group, id, type(kex).__name__, kex, request.request_id))
         except Exception, ex:
             # As there is a lot of other possible network related exceptions
             # this catch all seems to make sense.
             current_app.logger.error(
                 'Error creating job for %s/%s. %s: %s. '
                 'Request id: %s' % (
-                    project, id, type(ex).__name__, ex, request.request_id))
+                    group, id, type(ex).__name__, ex, request.request_id))
             return jsonify({
                 'status': 'error', 'message': 'unknown error'}), 500
 
@@ -114,7 +114,7 @@ class V0PlaybookAPI(MethodView):
     decorators = [
         remote_user_required, check_group, require_database, inject_request_id]
 
-    def get(self, project=None, id=None):
+    def get(self, group=None, id=None):
         """
         Gets a list or single playbook and returns it to the requestor.
         """
@@ -125,14 +125,14 @@ class V0PlaybookAPI(MethodView):
         if id is None:
             # List playbooks
             current_app.logger.debug(
-                'User %s is listing known playbooks for project %s. '
+                'User %s is listing known playbooks for group %s. '
                 'Request id: %s' % (
-                    request.remote_user, project, request.request_id))
+                    request.remote_user, group, request.request_id))
 
-            if project is None:
+            if group is None:
                 playbooks = g.db.re.playbooks.find()
             else:
-                playbooks = g.db.re.playbooks.find({"project": str(project)})
+                playbooks = g.db.re.playbooks.find({"group": str(group)})
             items = []
             for item in playbooks:
                 item["id"] = str(item["_id"])
@@ -145,14 +145,14 @@ class V0PlaybookAPI(MethodView):
 
         # One playbook
         playbook = g.db.re.playbooks.find_one({
-            "_id": ObjectId(id), "project": str(project)})
+            "_id": ObjectId(id), "group": str(group)})
 
         if playbook is None:
             return jsonify({'status': 'not found'}), 404
         current_app.logger.debug(
-            'Listing known playbook %s for project %s. '
+            'Listing known playbook %s for group %s. '
             'Request id: %s' % (
-                id, project, request.request_id))
+                id, group, request.request_id))
 
         playbook["id"] = str(playbook["_id"])
         del playbook["_id"]
@@ -161,9 +161,9 @@ class V0PlaybookAPI(MethodView):
             status=200,
             mimetype=serializer.mimetype)
 
-    def put(self, project):
+    def put(self, group):
         """
-        Creates a new playbook for a project.
+        Creates a new playbook for a group..
         """
         # Serializer so we can handle json and yaml
         serializer = serialize.Serialize(request.args.get(
@@ -171,14 +171,14 @@ class V0PlaybookAPI(MethodView):
 
         # Gets the formatter info
         current_app.logger.info(
-            'Creating a new playbook for project %s by user %s. '
+            'Creating a new playbook for group %s by user %s. '
             'Request id: %s' % (
-                project, request.remote_user, request.request_id))
+                group, request.remote_user, request.request_id))
 
         try:
             playbook = serializer.load(request.data)
             validate_playbook(playbook)
-            playbook["project"] = str(project)
+            playbook["group"] = str(group)
             id = g.db.re.playbooks.insert(playbook)
 
             return jsonify({'status': 'created', 'id': str(id)}), 201
@@ -186,18 +186,18 @@ class V0PlaybookAPI(MethodView):
             return jsonify(
                 {'status': 'bad request', 'message': str(ke)}), 400
 
-    def post(self, project, id):
+    def post(self, group, id):
         """
-        Replaces a playbook for a project.
+        Replaces a playbook for a group.
         """
         # Serializer so we can handle json and yaml
         serializer = serialize.Serialize(request.args.get(
             'format', 'json'))
 
         current_app.logger.info(
-            'Updating a playbook for project %s by user %s. '
+            'Updating a playbook for group %s by user %s. '
             'Request id: %s' % (
-                project, request.remote_user, request.request_id))
+                group, request.remote_user, request.request_id))
         try:
             oid = ObjectId(id)
         except InvalidId:
@@ -211,7 +211,7 @@ class V0PlaybookAPI(MethodView):
         if exists:
             try:
                 playbook = serializer.load(request.data)
-                playbook["project"] = str(project)
+                playbook["group"] = str(group)
                 validate_playbook(playbook)
                 g.db.re.playbooks.update({"_id": oid}, playbook)
                 return jsonify({
@@ -222,7 +222,7 @@ class V0PlaybookAPI(MethodView):
 
         return jsonify({'status': 'not found'}), 404
 
-    def delete(self, project, id):
+    def delete(self, group, id):
         """
         Deletes a playbook.
         """
@@ -234,9 +234,9 @@ class V0PlaybookAPI(MethodView):
             return jsonify({'status': 'bad request', 'message': 'Bad id'}), 400
 
         current_app.logger.info(
-            'Deleting playbook %s for project %s by user %s. '
+            'Deleting playbook %s for group %s by user %s. '
             'Request id: %s' % (
-                id, project, request.remote_user, request.request_id))
+                id, group, request.remote_user, request.request_id))
         exists = g.db.re.playbooks.find_one({"_id": oid})
         if exists:
             g.db.re.playbooks.remove({"_id": oid})
@@ -251,17 +251,17 @@ def make_routes(app):
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
     playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
 
-    app.add_url_rule('/api/v0/<project>/playbook/<id>/deployment/',
+    app.add_url_rule('/api/v0/<group>/playbook/<id>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
 
     app.add_url_rule('/api/v0/playbooks/',
                      view_func=playbook_api_view, methods=[
                          'GET'])
 
-    app.add_url_rule('/api/v0/<project>/playbook/',
+    app.add_url_rule('/api/v0/<group>/playbook/',
                      view_func=playbook_api_view, methods=[
                          'GET', 'PUT'])
-    app.add_url_rule('/api/v0/<project>/playbook/<id>/',
+    app.add_url_rule('/api/v0/<group>/playbook/<id>/',
                      view_func=playbook_api_view, methods=[
                          'GET', 'POST', 'DELETE'])
 

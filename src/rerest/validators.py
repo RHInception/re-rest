@@ -15,32 +15,35 @@
 """
 Validation functions.
 """
+import os
+import json
 
 from jsonschema import ValidationError, validate
 
 
 #: Schema for playbook defined by using json-schema.org syntax.
-PLAYBOOK_SCHEMA = {
+playbook_schema_file = os.path.sep.join([
+    os.path.split(__file__)[0], 'data', 'playbook_schema.json'])
+with open(playbook_schema_file, 'r') as f:
+    PLAYBOOK_SCHEMA = json.load(f)
+
+
+'''PLAYBOOK_SCHEMA = {
     'type': 'object',
-    'required': ['project', 'ownership', 'steps'],
+    'required': ['group', 'name', 'execution'],
     'properties': {
-        'project': {'type': 'string'},
-        'ownership': {
-            'type': 'object',
-            'properties': {
-                'id': {'type': 'string'},
-                'contact': {'type': 'string'},
-            },
-        },
-        'steps': {
+        'group': {'type': 'string'},
+        'name': {'type': 'string'},
+        'execution': {
             'type': 'array',
             'items': [{
                 'type': 'object',
                 'additionalItems': False,
-                'required': ['name', 'plugin', 'parameters']}],
+                'required': ['hosts', 'preflight', 'steps']}],
         },
     }
 }
+'''
 
-
+#: validated that a playbook meets the expected schema
 validate_playbook = lambda pb: validate(pb, PLAYBOOK_SCHEMA)

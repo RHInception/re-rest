@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://jsonschema.net#",
+  "type": "object",
+  "required": ["execution", "name", "group"],
+  "additionalProperties": false,
+  "properties": {
+    "execution": {
+      "id": "#execution",
+      "type": "array",
+      "items": {
+        "id": "#0",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["hosts", "steps", "description"],
+        "properties": {
+          "hosts": {
+            "id": "#hosts",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "id": "#0",
+              "type": "string"
+            }
+          },
+          "steps": {
+            "id": "#steps",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "anyOf": [
+                {"type": "string", "pattern": "^[\\w]*\\.[\\w]*$"},
+                {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[\\w]*\\.[\\w]*$": {"type": "object"},
+                    "^[\\w]^": {"type": "object"}
+                  }
+                }
+              ]
+            }
+          },
+          "description": {
+            "id": "#description",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "group": {
+      "id": "#group",
+      "type": "string"
+    },
+    "name": {
+      "id": "#name",
+      "type": "string"
+    }
+  }
+}

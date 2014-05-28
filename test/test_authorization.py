@@ -57,9 +57,9 @@ class TestAuthorization(TestCase):
                 mldap.initialize.return_value = conn
 
                 assert authorization.ldap_search(
-                    'username', {'project': 'group1'})
+                    'username', {'group': 'group1'})
                 assert authorization.ldap_search(
-                    'username', {'project': 'notallowed'}) is False
+                    'username', {'group': 'notallowed'}) is False
 
         # Check on error conditions
         # If SERVER_DOWN, LDAPError or ImportError is raised the user should
@@ -72,6 +72,6 @@ class TestAuthorization(TestCase):
                     mldap.initialize.side_effect = ex
 
                     assert authorization.ldap_search(
-                        'username', {'project': 'group1'}) is False
+                        'username', {'group': 'group1'}) is False
                     assert authorization.ldap_search(
-                        'username', {'project': 'notallowed'}) is False
+                        'username', {'group': 'notallowed'}) is False

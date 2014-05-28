@@ -32,18 +32,17 @@ from flask import appcontext_pushed
 
 
 PLAYBOOK = {
-    "project": "example project",
-    "ownership": {
-        "id": "Some team",
-        "contact": "someteam@example.com"
-    },
-    "steps": [{
-        "name": "example step",
-        "plugin": "shexec",
-        "parameters": {
-            "command": "ls -l /"
-        }
-    }]
+    "group": "example group",
+    "name": "my playbook",
+    "execution": [{
+        "description": "do stuff",
+        "hosts": ["127.0.0.1"],
+        "steps": [{
+            "example.Step": {
+                "command": "ls -l /"
+            }
+        }]}
+    ]
 }
 
 
@@ -65,7 +64,7 @@ def db_ctx(app):
 class TestV0PlaybookEndpoint(TestCase):
 
     def _check_unauth_response(self, response):
-        assert request.view_args['project'] == 'test'
+        assert request.view_args['group'] == 'test'
         assert response.status_code == 401
         assert response.mimetype == 'application/json'
         result = json.loads(response.data)
@@ -85,7 +84,7 @@ class TestV0PlaybookEndpoint(TestCase):
                     '/api/v0/test/playbook/',
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == 'test'
+                assert request.view_args['group'] == 'test'
                 assert response.status_code == 200
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
@@ -126,7 +125,7 @@ class TestV0PlaybookEndpoint(TestCase):
                     '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == 'test'
+                assert request.view_args['group'] == 'test'
                 assert request.view_args['id'] == '53614ccf1370129d6f29c7dd'
                 assert response.status_code == 200
                 assert response.mimetype == 'application/json'
@@ -156,7 +155,7 @@ class TestV0PlaybookEndpoint(TestCase):
                     data=json.dumps(PLAYBOOK),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == 'test'
+                assert request.view_args['group'] == 'test'
                 assert response.status_code == 201
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
@@ -175,7 +174,7 @@ class TestV0PlaybookEndpoint(TestCase):
                     data=yaml.dump(PLAYBOOK),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == 'test'
+                assert request.view_args['group'] == 'test'
                 assert response.status_code == 201
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
@@ -220,7 +219,7 @@ class TestV0PlaybookEndpoint(TestCase):
                     data=json.dumps(PLAYBOOK),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == 'test'
+                assert request.view_args['group'] == 'test'
                 assert response.status_code == 200
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
@@ -240,7 +239,7 @@ class TestV0PlaybookEndpoint(TestCase):
                     data=yaml.dump(PLAYBOOK),
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == 'test'
+                assert request.view_args['group'] == 'test'
                 assert response.status_code == 200
                 assert response.mimetype == 'application/json'
                 result = json.loads(response.data)
@@ -291,7 +290,7 @@ class TestV0PlaybookEndpoint(TestCase):
                     '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
                     environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['project'] == 'test'
+                assert request.view_args['group'] == 'test'
                 assert request.view_args['id'] == '53614ccf1370129d6f29c7dd'
                 assert response.status_code == 410
                 assert response.mimetype == 'application/json'

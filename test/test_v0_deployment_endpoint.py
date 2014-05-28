@@ -50,7 +50,7 @@ class TestV0DeploymentEndpoint(TestCase):
             response = c.put(
                 '/api/v0/test/playbook/12345/deployment/',
                 environ_overrides={'REMOTE_USER': 'testuser'})
-            assert request.view_args['project'] == 'test'
+            assert request.view_args['group'] == 'test'
             assert request.view_args['id'] == '12345'
             assert response.status_code == 201
             assert response.mimetype == 'application/json'
@@ -71,7 +71,7 @@ class TestV0DeploymentEndpoint(TestCase):
         with self.test_client() as c:
             response = c.put(
                 '/api/v0/test/playbook/12345/deployment/')
-            assert request.view_args['project'] == 'test'
+            assert request.view_args['group'] == 'test'
             assert request.view_args['id'] == '12345'
             assert response.status_code == 401
             assert response.mimetype == 'application/json'

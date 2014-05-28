@@ -60,16 +60,16 @@ def ldap_search(username, params):
                 current_app.logger.debug(
                     'User %s has access to the following groups: %s' % (
                         username, allowed_groups))
-                if params['project'] in allowed_groups:
+                if params['group'] in allowed_groups:
                     current_app.logger.debug(
                         'User %s successfully authenticated for group %s.' % (
-                            username, params['project']))
+                            username, params['group']))
                     return True  # <-- the ONLY return True that should exist!
                 else:
                     current_app.logger.warn(
                         'User %s attempted to access %s though the user is not'
                         ' in the correct group.' % (
-                            username, params['project']))
+                            username, params['group']))
             except KeyError, ke:
                 current_app.logger.error(
                     'Key was missing: %s. Denying auth for user %s' % (

@@ -77,13 +77,13 @@ class JobCreator(object):
                 self._tmp_q.method.queue, self.request_id))
 
     def create_job(
-            self, project, playbook_id, dynamic=None,
+            self, group, playbook_id, dynamic=None,
             exchange='re', topic='job.create'):
         """
         Emits a message notifying the FSM that a release job needs
         to be created.
 
-        project is the name of the project
+        group is the name of the group
         playbook_id is the playbook_id id to use
         dynamic is a dictionary of dynamic elements to pass through
         exchange is the MQ exchange to emit on. Default: re
@@ -93,21 +93,21 @@ class JobCreator(object):
         properties = pika.spec.BasicProperties()
         properties.reply_to = self._tmp_q.method.queue
 
-        self.logger.info('Creating a job for project %s/%s using exchange '
+        self.logger.info('Creating a job for group %s/%s using exchange '
                          '%s and topic %s. Temp queue name is %s '
                          'for request id %s' % (
-                             project, playbook_id, exchange, topic,
+                             group, playbook_id, exchange, topic,
                              self._tmp_q.method.queue, self.request_id))
 
         try:
             # Send the message
             self.logger.debug(
-                'Sending job request for project %s/%s using exchange '
+                'Sending job request for group %s/%s using exchange '
                 '%s and topic %s for request id %s' % (
-                    project, playbook_id, exchange, topic, self.request_id))
+                    group, playbook_id, exchange, topic, self.request_id))
 
             msg = {
-                'project': project,
+                'group': group,
                 'playbook_id': playbook_id,
             }
 
@@ -129,12 +129,12 @@ class JobCreator(object):
                 'Unable to send the message. Channel is closed. '
                 'request id %s' % self.request_id)
 
-    def get_confirmation(self, project, exchange='re'):
+    def get_confirmation(self, group, exchange='re'):
         """
         Gets a confirmation that the release job has been accepted
         and started.
 
-        project is the name of the project
+        group is the name of the group
         exchange is the MQ exchange to emit on. Default: re
         """
         self.logger.info(
@@ -161,7 +161,7 @@ class JobCreator(object):
                     json.dumps({
                         'slug': 'Started %s' % job_id,
                         'message': "Project %s's job %s has been started." % (
-                            project, job_id),
+                            group, job_id),
                         'phase': 'created',
                     }),
                     properties=properties)
