@@ -29,12 +29,11 @@
             "minItems": 1,
             "items": {
               "anyOf": [
-                {"type": "string", "pattern": "^[\\w]*\\.[\\w]*$"},
+                {"type": "string", "pattern": "^[\\w]+:{1}[\\w]+$"},
                 {
                   "type": "object",
                   "patternProperties": {
-                    "^[\\w]*\\.[\\w]*$": {"type": "object"},
-                    "^[\\w]^": {"type": "object"}
+                    "^[\\w]+:{1}[\\w]+$": {"type": "object"}
                   }
                 }
               ]

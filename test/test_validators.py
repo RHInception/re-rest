@@ -85,7 +85,7 @@ class TestValidators(TestCase):
             'execution': [{
                 'description': 'something',
                 'hosts': ['127.0.0.1'],
-                'steps': [{"service.Restart": {"service": "httpd"}}]
+                'steps': [{"service:Restart": {"service": "httpd"}}]
             }]
 
         }
@@ -96,9 +96,9 @@ class TestValidators(TestCase):
         w_steps['execution'].append({
             'description': 'second',
             'hosts': ['127.0.0.1'],
-            'steps': [{"service.Restart": {"service": "httpd"}}]})
+            'steps': [{"service:Restart": {"service": "httpd"}}]})
 
         # A string as a step should be valid
-        w_steps['execution'][0]['steps'].append("do.SomethingAsString")
+        w_steps['execution'][0]['steps'].append("do:SomethingAsString")
 
         assert validate_playbook(w_steps) is None

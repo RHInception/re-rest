@@ -38,7 +38,7 @@ PLAYBOOK = {
         "description": "do stuff",
         "hosts": ["127.0.0.1"],
         "steps": [{
-            "example.Step": {
+            "example:Step": {
                 "command": "ls -l /"
             }
         }]}
@@ -117,7 +117,6 @@ class TestV0PlaybookEndpoint(TestCase):
         """
         Test getting a single playbook.
         """
-
         with db_ctx(app):
             # Check with good input
             with self.test_client() as c:
