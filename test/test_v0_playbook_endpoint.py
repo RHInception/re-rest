@@ -37,6 +37,9 @@ PLAYBOOK = {
     "execution": [{
         "description": "do stuff",
         "hosts": ["127.0.0.1"],
+        "preflight": [
+            "something:ToDo",
+        ],
         "steps": [{
             "example:Step": {
                 "command": "ls -l /"

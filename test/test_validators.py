@@ -102,3 +102,8 @@ class TestValidators(TestCase):
         w_steps['execution'][0]['steps'].append("do:SomethingAsString")
 
         assert validate_playbook(w_steps) is None
+
+        # Preflight is optional but should be allowed
+        w_steps['execution'][0]['preflight'] = [
+            'something:ToDo', {'another:Item': {'with': 'parameters'}}]
+        assert validate_playbook(w_steps) is None

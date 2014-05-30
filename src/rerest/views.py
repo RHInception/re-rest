@@ -182,9 +182,13 @@ class V0PlaybookAPI(MethodView):
             id = g.db.re.playbooks.insert(playbook)
 
             return jsonify({'status': 'created', 'id': str(id)}), 201
-        except (KeyError, ValueError, ValidationError), ke:
+        except (KeyError, ValueError), ke:
             return jsonify(
                 {'status': 'bad request', 'message': str(ke)}), 400
+        except ValidationError, ve:
+            return jsonify({
+                'status': 'bad request',
+                'message': 'The playbook does not conforim to the spec.'}), 400
 
     def post(self, group, id):
         """
@@ -216,9 +220,14 @@ class V0PlaybookAPI(MethodView):
                 g.db.re.playbooks.update({"_id": oid}, playbook)
                 return jsonify({
                     'status': 'ok', 'id': str(exists['_id'])}), 200
-            except (KeyError, ValueError, ValidationError), ke:
+            except (KeyError, ValueError), ke:
                 return jsonify({
                     'status': 'bad request', 'message': str(ke)}), 400
+            except ValidationError, ve:
+                return jsonify({
+                    'status': 'bad request',
+                    'message': ('The playbook does not '
+                                'conforim to the spec.')}), 400
 
         return jsonify({'status': 'not found'}), 404
 

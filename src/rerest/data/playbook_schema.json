@@ -39,6 +39,21 @@
               ]
             }
           },
+          "preflight": {
+            "id": "#preflight",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {"type": "string", "pattern": "^[\\w]+:{1}[\\w]+$"},
+                {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[\\w]+:{1}[\\w]+$": {"type": "object"}
+                  }
+                }
+              ]
+            }
+          },
           "description": {
             "id": "#description",
             "type": "string"
