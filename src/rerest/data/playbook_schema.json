@@ -2,9 +2,84 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "id": "http://jsonschema.net#",
   "type": "object",
-  "required": ["execution", "name", "group"],
   "additionalProperties": false,
-  "properties": {
+
+  "definitions": {
+    "notify": {
+      "type": "object",
+      "properties": {
+        "started": {"$ref": "#/definitions/notify_items"},
+        "completed": {"$ref": "#/definitions/notify_items"},
+        "failed": {"$ref": "#/definitions/notify_items"}
+      }
+    },
+
+    "notify_items": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/notify_definitions"
+      }
+    },
+
+    "notify_definition": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minItems": 1
+        }
+      }
+    },
+
+    "group": {
+      "id": "#group",
+      "type": "string"
+    },
+    "name": {
+      "id": "#name",
+      "type": "string"
+    },
+    "description": {
+      "id": "#description",
+      "type": "string"
+    },
+    "step_types": {
+      "anyOf": [
+        {"$ref": "#/definitions/step_string"},
+        {"$ref": "#/definitions/step_object"}
+      ]
+    },
+    "step_string": {
+      "type": "string",
+        "pattern": "^[\\w]+:{1}[\\w]+$"
+    },
+    "step_object": {
+      "type": "object",
+      "patternProperties": {
+        "^[\\w]+:{1}[\\w]+$": {
+          "type": "object"
+        }
+      },
+      "properties": {
+          "notify": {"$ref": "#/definitions/notify"}
+      }
+    },
+    "steps": {
+      "id": "#steps",
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/step_types"}
+    },
+    "hosts": {
+      "id": "#hosts",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "id": "#0",
+        "type": "string"
+      }
+    },
     "execution": {
       "id": "#execution",
       "type": "array",
@@ -14,60 +89,20 @@
         "additionalProperties": false,
         "required": ["hosts", "steps", "description"],
         "properties": {
-          "hosts": {
-            "id": "#hosts",
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "id": "#0",
-              "type": "string"
-            }
-          },
-          "steps": {
-            "id": "#steps",
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "anyOf": [
-                {"type": "string", "pattern": "^[\\w]+:{1}[\\w]+$"},
-                {
-                  "type": "object",
-                  "patternProperties": {
-                    "^[\\w]+:{1}[\\w]+$": {"type": "object"}
-                  }
-                }
-              ]
-            }
-          },
-          "preflight": {
-            "id": "#preflight",
-            "type": "array",
-            "items": {
-              "anyOf": [
-                {"type": "string", "pattern": "^[\\w]+:{1}[\\w]+$"},
-                {
-                  "type": "object",
-                  "patternProperties": {
-                    "^[\\w]+:{1}[\\w]+$": {"type": "object"}
-                  }
-                }
-              ]
-            }
-          },
-          "description": {
-            "id": "#description",
-            "type": "string"
-          }
+          "hosts": {"$ref": "#/definitions/hosts"},
+          "steps": {"$ref": "#/definitions/steps"},
+          "preflight": {"$ref": "#/definitions/steps"},
+          "description": {"$ref": "#/definitions/description"}
         }
       }
-    },
-    "group": {
-      "id": "#group",
-      "type": "string"
-    },
-    "name": {
-      "id": "#name",
-      "type": "string"
     }
-  }
+  },
+
+  "properties": {
+    "execution": {"$ref": "#/definitions/execution"},
+    "group": {"$ref": "#/definitions/group"},
+    "name": {"$ref": "#/definitions/name"}
+  },
+
+  "required": ["execution", "name", "group"]
 }
