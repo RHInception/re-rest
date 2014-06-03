@@ -18,7 +18,9 @@ Unittests.
 
 from . import TestCase, unittest
 
-from jsonschema import ValidationError, SchemaError
+import json
+from jsonschema import ValidationError, SchemaError, Draft4Validator
+import jsonschema.exceptions
 
 from rerest.validators import validate_playbook
 
@@ -107,3 +109,17 @@ class TestValidators(TestCase):
         w_steps['execution'][0]['preflight'] = [
             'something:ToDo', {'another:Item': {'with': 'parameters'}}]
         assert validate_playbook(w_steps) is None
+
+    def test_validate_draft4_schema(self):
+        """
+        The schema itself validates
+        """
+        with open('src/rerest/data/playbook_schema.json') as f:
+            PLAYBOOK_SCHEMA = json.load(f)
+
+            try:
+                res = Draft4Validator.check_schema(PLAYBOOK_SCHEMA)
+            except jsonschema.exceptions.ValidationError:
+                assert False
+            else:
+                self.assertEqual(res, None)

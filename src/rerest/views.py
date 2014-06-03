@@ -185,7 +185,7 @@ class V0PlaybookAPI(MethodView):
         except (KeyError, ValueError), ke:
             return jsonify(
                 {'status': 'bad request', 'message': str(ke)}), 400
-        except ValidationError, ve:
+        except ValidationError:
             return jsonify({
                 'status': 'bad request',
                 'message': 'The playbook does not conforim to the spec.'}), 400
@@ -223,7 +223,7 @@ class V0PlaybookAPI(MethodView):
             except (KeyError, ValueError), ke:
                 return jsonify({
                     'status': 'bad request', 'message': str(ke)}), 400
-            except ValidationError, ve:
+            except ValidationError:
                 return jsonify({
                     'status': 'bad request',
                     'message': ('The playbook does not '
