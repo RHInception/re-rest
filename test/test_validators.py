@@ -27,6 +27,28 @@ from rerest.validators import validate_playbook
 
 class TestValidators(TestCase):
 
+    def test_validate_playbook_with_invalid_keys(self):
+        """
+        We do not allow '.' characters in step names
+        """
+        top = {
+            'group': 'p',
+            'name': 'myplaybook',
+            'execution': [{
+                'description': 'something',
+                'hosts': ['127.0.0.1'],
+                'steps': []
+            }]
+        }
+
+        # Must not contain period characters in simple string steps
+        top['execution'][0]['steps'].append("foo.Bar")
+        self.assertRaises(ValidationError, validate_playbook, top)
+
+        # Must not contain period characters in object steps
+        top['execution'][0]['steps'] = [{"service.Restart": {"service": "httpd"}}]
+        self.assertRaises(ValidationError, validate_playbook, top)
+
     def test_validate_playbook_with_missing_items(self):
         """
         Verify validate_playbook checks for expected input and raises
