@@ -25,10 +25,26 @@
 # # directory of the target file ($@), kinda like `dirname`.
 # ASCII2MAN = a2x -D $(dir $@) -d manpage -f manpage $<
 # MANPAGES := docs/man/man1/re-rest.1
-# NAME := re-rest
 
-# RPMSPECDIR := .
-# RPMSPEC := $(RPMSPECDIR)/re-rest.spec
+NAME := rerest
+PKGNAME := re-rest
+RPMSPECDIR := ./contrib/rpm
+RPMSPEC := $(RPMSPECDIR)/$(PKGNAME).spec
+# VERSION file provides one place to update the software version.
+VERSION := $(shell cat VERSION)
+RPMRELEASE = $(shell awk '/global _short_release/{print $$NF; exit}' $(RPMSPEC).in)
+
+
+# Build the spec file on the fly. Substitute version numbers from the
+# # canonical VERSION file.
+re-rest.spec: $(RPMSPECDIR)/re-rest.spec.in
+	sed "s/%VERSION%/$(VERSION)/" $< > $@
+
+
+# Build the distutils setup file on the fly.
+setup.py: setup.py.in VERSION $(RPMSPECDIR)/re-rest.spec.in
+	sed -e "s/%VERSION%/$(VERSION)/" -e "s/%RELEASE%/$(RPMRELEASE)/" $< > $@
+
 
 # # To force a rebuild of the docs run 'touch VERSION && make docs'
 # docs: $(MANPAGES)
@@ -43,9 +59,8 @@
 # %.1: %.1.asciidoc
 # 	$(ASCII2MAN)
 
-sdist: clean
-	python setup.py sdist
-	rm -fR recore.egg-info
+tag:
+	git tag -s -m $(TAG) $(TAG)
 
 tests: coverage pep8 pyflakes
 	:
@@ -59,7 +74,7 @@ coverage:
 clean:
 	@find . -type f -regex ".*\.py[co]$$" -delete
 	@find . -type f \( -name "*~" -or -name "#*" \) -delete
-	@rm -fR build cover dist rpm-build MANIFEST htmlcov .coverage recore.egg-info
+	@rm -fR build cover dist rpm-build MANIFEST htmlcov .coverage rerest.egg-info
 
 pep8:
 	@echo "#############################################"
@@ -74,34 +89,38 @@ pyflakes:
 	@echo "#############################################"
 	-pyflakes src/rerest
 
-# Comment out until we're building this properly.
+install: clean
+	python ./setup.py install
 
-# rpmcommon: sdist
-# 	@mkdir -p rpm-build
-# 	@cp dist/*.gz rpm-build/
+sdist: setup.py clean
+	python setup.py sdist -t MANIFEST.in
 
-# srpm: rpmcommon
-# 	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
-# 	--define "_builddir %{_topdir}" \
-# 	--define "_rpmdir %{_topdir}" \
-# 	--define "_srcrpmdir %{_topdir}" \
-# 	--define "_specdir $(RPMSPECDIR)" \
-# 	--define "_sourcedir %{_topdir}" \
-# 	-bs $(RPMSPEC)
-# 	@echo "#############################################"
-# 	@echo "$(NAME) SRPM is built:"
-# 	@find rpm-build -maxdepth 2 -name '$(NAME)*src.rpm' | awk '{print "    " $$1}'
-# 	@echo "#############################################"
+rpmcommon: re-rest.spec sdist
+	@mkdir -p rpm-build
+	@cp dist/$(NAME)-$(VERSION)-$(RPMRELEASE).tar.gz rpm-build/$(VERSION)-$(RPMRELEASE).tar.gz
 
-# rpm: rpmcommon
-# 	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
-# 	--define "_builddir %{_topdir}" \
-# 	--define "_rpmdir %{_topdir}" \
-# 	--define "_srcrpmdir %{_topdir}" \
-# 	--define "_specdir $(RPMSPECDIR)" \
-# 	--define "_sourcedir %{_topdir}" \
-# 	-ba $(RPMSPEC)
-# 	@echo "#############################################"
-# 	@echo "$(NAME) RPMs are built:"
-# 	@find rpm-build -maxdepth 2 -name '$(NAME)*.rpm' | awk '{print "    " $$1}'
-# 	@echo "#############################################"
+srpm: rpmcommon
+	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
+	--define "_builddir %{_topdir}" \
+	--define "_rpmdir %{_topdir}" \
+	--define "_srcrpmdir %{_topdir}" \
+	--define "_specdir $(RPMSPECDIR)" \
+	--define "_sourcedir %{_topdir}" \
+	-bs $(RPMSPEC)
+	@echo "#############################################"
+	@echo "$(PKGNAME) SRPM is built:"
+	@find rpm-build -maxdepth 2 -name '$(PKGNAME)*src.rpm' | awk '{print "    " $$1}'
+	@echo "#############################################"
+
+rpm: rpmcommon
+	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
+	--define "_builddir %{_topdir}" \
+	--define "_rpmdir %{_topdir}" \
+	--define "_srcrpmdir %{_topdir}" \
+	--define "_specdir $(RPMSPECDIR)" \
+	--define "_sourcedir %{_topdir}" \
+	-ba $(RPMSPEC)
+	@echo "#############################################"
+	@echo "$(PKGNAME) RPMs are built:"
+	@find rpm-build -maxdepth 2 -name '$(PKGNAME)*.rpm' | awk '{print "    " $$1}'
+	@echo "#############################################"

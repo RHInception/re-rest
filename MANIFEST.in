@@ -1,9 +1,4 @@
-include LICENSE
-include AUTHORS
-include MANIFEST.in
-include README.md
-include example-config.json
-include setup.py
-include requirements.txt
-recursive-include contrib *
-recursive-include test *
+include LICENSE AUTHORS README.md example-settings.json requirements.txt
+graft contrib
+graft test
+graft src/rerest
