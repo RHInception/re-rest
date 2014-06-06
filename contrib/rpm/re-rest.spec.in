@@ -34,7 +34,6 @@ Simple REST Api for release automation.
 %check
 
 %prep
-#%setup -q
 %setup -n rerest-%{version}-%{_short_release} -q
 
 %build
@@ -55,7 +54,7 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
-* Thu Jun  5 2014 Chris Murphy <chmurphy@redhat.com> - 0.0.4-0
+* Thu Jun  5 2014 Chris Murphy <chmurphy@redhat.com> - 0.0.4-1
 - Refacter for easier building
 
 * Thu Jun  5 2014 Chris Murphy <chmurphy@redhat.com> - 0.0.3-3
