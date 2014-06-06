@@ -19,19 +19,25 @@ Build script.
 
 import os.path
 
-from pip.req import parse_requirements
-#from setuptools import setup, find_packages
-from distutils.core import setup
-from setuptools import find_packages
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    import warnings
+    warnings.warn('No setuptools. Script creation will be skipped.')
+    from distutils.core import setup
 
-install_reqs = parse_requirements('requirements.txt')
-reqs = [str(ir.req) for ir in install_reqs]
+def parse_requirements(path):
+    with open(path, 'r') as install_reqs:
+        return install_reqs.read().splitlines()
+
+reqs = parse_requirements('requirements.txt')
 
 setup(
     name='rerest',
     version='%VERSION%-%RELEASE%',
     description="REST entrypoint to the core component of the Inception Release Engine",
     author='See AUTHORS',
+    author_email='inception@redhat.com',
     url='https://github.com/RHInception/re-rest',
     license='AGPLv3',
     zip_safe=False,

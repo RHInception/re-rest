@@ -28,7 +28,7 @@
 
 NAME := rerest
 PKGNAME := re-rest
-RPMSPECDIR := ./contrib/rpm
+RPMSPECDIR := contrib/rpm
 RPMSPEC := $(RPMSPECDIR)/$(PKGNAME).spec
 # VERSION file provides one place to update the software version.
 VERSION := $(shell cat VERSION)
@@ -37,7 +37,7 @@ RPMRELEASE = $(shell awk '/global _short_release/{print $$NF; exit}' $(RPMSPEC).
 
 # Build the spec file on the fly. Substitute version numbers from the
 # # canonical VERSION file.
-re-rest.spec: $(RPMSPECDIR)/re-rest.spec.in
+$(RPMSPECDIR)/re-rest.spec: $(RPMSPECDIR)/re-rest.spec.in
 	sed "s/%VERSION%/$(VERSION)/" $< > $@
 
 
@@ -93,9 +93,9 @@ install: clean
 	python ./setup.py install
 
 sdist: setup.py clean
-	python setup.py sdist -t MANIFEST.in
+	python setup.py sdist
 
-rpmcommon: re-rest.spec sdist
+rpmcommon: $(RPMSPECDIR)/re-rest.spec sdist
 	@mkdir -p rpm-build
 	@cp dist/$(NAME)-$(VERSION)-$(RPMRELEASE).tar.gz rpm-build/$(VERSION)-$(RPMRELEASE).tar.gz
 

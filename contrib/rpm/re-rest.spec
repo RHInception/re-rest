@@ -8,7 +8,7 @@
 %global _short_release 1
 
 Name:           re-rest
-Version:        %VERSION%
+Version:        0.0.4
 Release:        %{_short_release}%{?dist}
 Summary:        Simple REST Api for release automation
 
