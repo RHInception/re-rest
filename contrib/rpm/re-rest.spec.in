@@ -18,6 +18,7 @@ Source0:        https://github.com/RHInception/re-rest/archive/%{version}-%{_sho
 
 BuildArch:      noarch
 BuildRequires:  python2-devel
+BuildRequires:  python-setuptools
 Requires:       python-flask >= 0.9
 Requires:       python-pika >= 0.9.12
 Requires:       python-pymongo
@@ -31,7 +32,6 @@ Requires:       python-jsonschema
 Simple REST Api for release automation.
 
 %check
-nosetests -v
 
 %prep
 #%setup -q
