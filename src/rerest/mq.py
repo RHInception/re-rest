@@ -163,6 +163,7 @@ class JobCreator(object):
                         'message': "Project %s's job %s has been started." % (
                             group, job_id),
                         'phase': 'created',
+                        'target': []
                     }),
                     properties=properties)
                 return job_id
