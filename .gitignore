@@ -2,6 +2,7 @@
 tox/
 rpm-build/
 *.log
+rerestenv
 
 # C extensions
 *.so

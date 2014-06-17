@@ -7,6 +7,7 @@
 #   make pyflakes/pep8/coverage -- source code checks
 #   make tests ------------------- run all unit tests (export LOG=true for /tmp/ logging)
 
+#    - "nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest test/"
 ########################################################
 
 # > VARIABLE = value
@@ -28,6 +29,9 @@
 
 NAME := rerest
 PKGNAME := re-rest
+SHORTNAME := rerest
+TESTPACKAGE := rerest
+
 RPMSPECDIR := contrib/rpm
 RPMSPEC := $(RPMSPECDIR)/$(PKGNAME).spec
 # VERSION file provides one place to update the software version.
@@ -62,25 +66,59 @@ setup.py: setup.py.in VERSION $(RPMSPECDIR)/re-rest.spec.in
 tag:
 	git tag -s -m $(TAG) $(TAG)
 
+virtualenv:
+	@echo "#############################################"
+	@echo "# Creating a virtualenv"
+	@echo "#############################################"
+	virtualenv $(NAME)env
+	. $(NAME)env/bin/activate && pip install -r requirements.txt
+	. $(NAME)env/bin/activate && pip install pep8 nose coverage mock
+	# If there are any special things to install do it here
+	#. $(NAME)env/bin/activate && PUT INSTALL THING HERER
+
+ci-unittests:
+	@echo "#############################################"
+	@echo "# Running Unit Tests in virtualenv"
+	@echo "#############################################"
+	. $(NAME)env/bin/activate && nosetests -v --with-cover --cover-min-percentage=80 --cover-package=$(TESTPACKAGE) test/
+
+ci-list-deps:
+	@echo "#############################################"
+	@echo "# Listing all pip deps"
+	@echo "#############################################"
+	. $(NAME)env/bin/activate && pip freeze
+
+ci-pep8:
+	@echo "#############################################"
+	@echo "# Running PEP8 Compliance Tests in virtualenv"
+	@echo "#############################################"
+	. $(NAME)env/bin/activate && pep8 --ignore=E501,E121,E124 src/$(SHORTNAME)/
+
+
+ci: clean virtualenv ci-list-deps ci-pep8 ci-unittests
+	:
+
 tests: coverage pep8 pyflakes
 	:
 
-coverage:
+
+unittests:
 	@echo "#############################################"
-	@echo "# Running Unit + Coverage Tests"
+	@echo "# Running Unit Tests"
 	@echo "#############################################"
-	nosetests -v --with-cover --cover-min-percentage=80 --cover-package=rerest --cover-html test/
+	nosetests -v --with-cover --cover-min-percentage=80 --cover-package=$(TESTPACKAGE) test/
 
 clean:
 	@find . -type f -regex ".*\.py[co]$$" -delete
 	@find . -type f \( -name "*~" -or -name "#*" \) -delete
-	@rm -fR build cover dist rpm-build MANIFEST htmlcov .coverage rerest.egg-info
+	@rm -fR build dist rpm-build MANIFEST htmlcov .coverage recore.egg-info
+	@rm -rf $(NAME)env
 
 pep8:
 	@echo "#############################################"
 	@echo "# Running PEP8 Compliance Tests"
 	@echo "#############################################"
-	pep8 --ignore=E501,E121,E124 src/rerest/
+	pep8 --ignore=E501,E121,E124 src/$(SHORTNAME)/
 
 pyflakes:
 	@echo "#############################################"
