@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 1
+%global _short_release 2
 
 Name:           re-rest
 Version:        %VERSION%
@@ -48,12 +48,16 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %files
+%defattr(-, root, root)
 %doc README.md LICENSE AUTHORS
 %{python2_sitelib}/*
 %{_datarootdir}/rerest/*
 
 
 %changelog
+* Wed Jun 18 2014 Steve Milner <stevem@gnulinux.net> - 0.0.4-2
+- Defattr not being used in files section.
+
 * Thu Jun  5 2014 Chris Murphy <chmurphy@redhat.com> - 0.0.4-1
 - Refacter for easier building
 
