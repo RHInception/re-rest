@@ -188,7 +188,7 @@ class V0PlaybookAPI(MethodView):
         except ValidationError:
             return jsonify({
                 'status': 'bad request',
-                'message': 'The playbook does not conforim to the spec.'}), 400
+                'message': 'The playbook does not conform to the spec.'}), 400
 
     def post(self, group, id):
         """
@@ -227,7 +227,7 @@ class V0PlaybookAPI(MethodView):
                 return jsonify({
                     'status': 'bad request',
                     'message': ('The playbook does not '
-                                'conforim to the spec.')}), 400
+                                'conform to the spec.')}), 400
 
         return jsonify({'status': 'not found'}), 404
 

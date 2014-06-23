@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 2
+%global _short_release 3
 
 Name:           re-rest
 Version:        0.0.4
@@ -34,7 +34,6 @@ Simple REST Api for release automation.
 %check
 
 %prep
-#%setup -q
 %setup -n rerest-%{version}-%{_short_release} -q
 
 %build
@@ -56,10 +55,13 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Mon Jun 23 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.4-3
+- Fix typo
+
 * Wed Jun 18 2014 Steve Milner <stevem@gnulinux.net> - 0.0.4-2
 - Defattr not being used in files section.
 
-* Thu Jun  5 2014 Chris Murphy <chmurphy@redhat.com> - 0.0.4-0
+* Thu Jun  5 2014 Chris Murphy <chmurphy@redhat.com> - 0.0.4-1
 - Refacter for easier building
 
 * Thu Jun  5 2014 Chris Murphy <chmurphy@redhat.com> - 0.0.3-3
