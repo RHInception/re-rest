@@ -19,7 +19,7 @@ Default authorization callables.
 from flask import current_app
 
 
-def no_authorization(username, params):
+def no_authorization(username, params):  # pragma nocover
     """
     Helpful when debugging locally. Don't use this in production.
     """

@@ -135,13 +135,9 @@ class V0PlaybookAPI(MethodView):
                 playbooks = g.db.re.playbooks.find({"group": str(group)})
             items = []
             for item in playbooks:
-                item["id"] = str(item["_id"])
                 del item["_id"]
                 items.append(item)
-#            return Response(
             return jsonify({'status': 'ok', 'items': items}), 200
-#                status=200,
-#                mimetype=serializer.mimetype)
 
         # One playbook
         playbook = g.db.re.playbooks.find_one({

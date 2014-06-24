@@ -134,6 +134,8 @@ class TestV0PlaybookEndpoint(TestCase):
                 result = json.loads(response.data)
                 assert result['status'] == 'ok'
                 assert 'item' in result.keys()
+                # id should NOT be in the result
+                assert 'id' not in result.keys()
 
             # Check with bad input
             with self.test_client() as c:

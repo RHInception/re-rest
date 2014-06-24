@@ -5,10 +5,10 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 3
+%global _short_release 1
 
 Name:           re-rest
-Version:        0.0.4
+Version:        0.0.5
 Release:        %{_short_release}%{?dist}
 Summary:        Simple REST Api for release automation
 
@@ -55,6 +55,9 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Tue Jun 24 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-1
+- id no longer being set when GETing a playbook.
+
 * Mon Jun 23 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.4-3
 - Fix typo
 
