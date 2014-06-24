@@ -93,6 +93,9 @@ class TestV0PlaybookEndpoint(TestCase):
                 result = json.loads(response.data)
                 assert result['status'] == 'ok'
                 assert type(result['items']) == list
+                # When listing playbooks we should get ID's
+                for an_item in result['items']:
+                    assert 'id' in an_item.keys()
 
             # Check listing ALL playbooks
             with self.test_client() as c:
@@ -135,7 +138,7 @@ class TestV0PlaybookEndpoint(TestCase):
                 assert result['status'] == 'ok'
                 assert 'item' in result.keys()
                 # id should NOT be in the result
-                assert 'id' not in result.keys()
+                assert 'id' not in result['item'].keys()
 
             # Check with bad input
             with self.test_client() as c:

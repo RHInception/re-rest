@@ -135,6 +135,7 @@ class V0PlaybookAPI(MethodView):
                 playbooks = g.db.re.playbooks.find({"group": str(group)})
             items = []
             for item in playbooks:
+                item["id"] = item["_id"]
                 del item["_id"]
                 items.append(item)
             return jsonify({'status': 'ok', 'items': items}), 200
@@ -150,7 +151,6 @@ class V0PlaybookAPI(MethodView):
             'Request id: %s' % (
                 id, group, request.request_id))
 
-        playbook["id"] = str(playbook["_id"])
         del playbook["_id"]
         return Response(
             response=serializer.dump({'status': 'ok', 'item': playbook}),

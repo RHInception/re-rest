@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 1
+%global _short_release 2
 
 Name:           re-rest
 Version:        0.0.5
@@ -55,6 +55,9 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Tue Jun 24 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-2
+- Leave ID in listing of playbooks.
+
 * Tue Jun 24 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-1
 - id no longer being set when GETing a playbook.
 
