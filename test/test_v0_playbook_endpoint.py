@@ -125,30 +125,32 @@ class TestV0PlaybookEndpoint(TestCase):
         """
         with db_ctx(app):
             # Check with good input
-            with self.test_client() as c:
-                response = c.get(
-                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/',
-                    environ_overrides={'REMOTE_USER': 'testuser'})
+            for _format, _mime, _loader in ((
+                    'json', 'application/json', json.loads), ('yaml', 'text/yaml', yaml.safe_load)):
+                with self.test_client() as c:
+                    response = c.get(
+                        '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/?format=%s' % _format,
+                        environ_overrides={'REMOTE_USER': 'testuser'})
 
-                assert request.view_args['group'] == 'test'
-                assert request.view_args['id'] == '53614ccf1370129d6f29c7dd'
-                assert response.status_code == 200
-                assert response.mimetype == 'application/json'
-                result = json.loads(response.data)
-                assert result['status'] == 'ok'
-                assert 'item' in result.keys()
-                # id should NOT be in the result
-                assert 'id' not in result['item'].keys()
+                    assert request.view_args['group'] == 'test'
+                    assert request.view_args['id'] == '53614ccf1370129d6f29c7dd'
+                    assert response.status_code == 200
+                    assert response.mimetype == _mime
+                    result = _loader(response.data)
+                    assert result['status'] == 'ok'
+                    assert 'item' in result.keys()
+                    # id should NOT be in the result
+                    assert 'id' not in result['item'].keys()
 
-            # Check with bad input
-            with self.test_client() as c:
-                response = c.get('/api/v0//playbook/')
-                assert response.status_code == 404
+                # Check with bad input
+                with self.test_client() as c:
+                    response = c.get('/api/v0//playbook/')
+                    assert response.status_code == 404
 
-            # If there is no user we should fail
-            with self.test_client() as c:
-                assert self._check_unauth_response(c.get(
-                    '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/'))
+                # If there is no user we should fail
+                with self.test_client() as c:
+                    assert self._check_unauth_response(c.get(
+                        '/api/v0/test/playbook/53614ccf1370129d6f29c7dd/'))
 
     def test_create_playbook_json(self):
         """

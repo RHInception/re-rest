@@ -138,7 +138,11 @@ class V0PlaybookAPI(MethodView):
                 item["id"] = str(item["_id"])
                 del item["_id"]
                 items.append(item)
-            return jsonify({'status': 'ok', 'items': items}), 200
+            # This must be a Response since it can be YAML or JSON.
+            return Response(
+                response=serializer.dump({'status': 'ok', 'items': items}),
+                status=200,
+                mimetype=serializer.mimetype)
 
         # One playbook
         playbook = g.db.re.playbooks.find_one({

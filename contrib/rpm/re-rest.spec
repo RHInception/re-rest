@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 3
+%global _short_release 4
 
 Name:           re-rest
 Version:        0.0.5
@@ -55,6 +55,9 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Tue Jun 24 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-4
+- Listing playbooks should work with YAML.
+
 * Tue Jun 24 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-3
 - ID must be cased to string.
 
