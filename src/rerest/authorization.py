@@ -42,10 +42,10 @@ def ldap_search(username, params):
             cfg.get('LDAP_USER', ''), cfg.get('LDAP_PASSWORD', ''))
 
         search_result = conn.search_s(
-            cfg['LDAP_SEARCH_BASE'],
+            str(cfg['LDAP_SEARCH_BASE']),
             ldap.SCOPE_ONELEVEL,
             '(uid=%s)' % ldap.filter.escape_filter_chars(username, 1),
-            [cfg['LDAP_FIELD_MATCH']]
+            [str(cfg['LDAP_FIELD_MATCH'])]
         )
         current_app.logger.debug('LDAP search result: %s' % search_result)
         if len(search_result) == 1:

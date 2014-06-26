@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 4
+%global _short_release 5
 
 Name:           re-rest
 Version:        %VERSION%
@@ -55,6 +55,9 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Thu Jun 26 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-5
+- ldap requires strings and can not handle unicode.
+
 * Tue Jun 24 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-4
 - Listing playbooks should work with YAML.
 
