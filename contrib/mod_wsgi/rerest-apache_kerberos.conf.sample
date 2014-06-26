@@ -1,7 +1,7 @@
 
-WSGIScriptAlias / /var/www/yourapplication/rerest.wsgi
 
-<Location />
+# Only cover re-rest's api
+<Location /api/>
     AuthName "Release Engine SSL Service"
     AuthType Kerberos
     KrbMethodNegotiate On
@@ -17,6 +17,10 @@ WSGIScriptAlias / /var/www/yourapplication/rerest.wsgi
 </Location>
 
 <VirtualHost *:443>
+
+  # Enable re-rest in SSL
+  WSGIScriptAlias / /var/www/yourapplication/rerest.wsgi
+
   ServerName yourapplication.example.com
   # ServerAlias is to make sure "localhost" traffic goes here regardless.
   ServerAlias localhost
