@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 5
+%global _short_release 6
 
 Name:           re-rest
 Version:        0.0.5
@@ -45,7 +45,7 @@ rm -rf $RPM_BUILD_ROOT
 %{__python2} setup.py install --skip-build --root $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_datarootdir}/rerest/{mod_wsgi,test-ca-script}/
 cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
-
+cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 %files
 %defattr(-, root, root)
@@ -55,6 +55,9 @@ cp -rf contrib/mod_wsgi/* $RPM_BUILD_ROOT/%{_datarootdir}/rerest/mod_wsgi/
 
 
 %changelog
+* Wed Jul 2 2014 Ryan Cook <rcook@redhat.com> - 0.0.5-6
+- Addition of missing playbook schema
+
 * Thu Jun 26 2014 Steve Milner <stevem@gnulinux.net> - 0.0.5-5
 - ldap requires strings and can not handle unicode.
 
