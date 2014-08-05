@@ -5,10 +5,10 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 6
+%global _short_release 1
 
 Name:           re-rest
-Version:        0.0.5
+Version:        0.0.6
 Release:        %{_short_release}%{?dist}
 Summary:        Simple REST Api for release automation
 
@@ -55,6 +55,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Tue Aug  5 2014 Steve Milner <stevem@gnulinux.net> - 0.0.6-1
+- Configuration file changes for better authorization searches.
+
 * Wed Jul 2 2014 Ryan Cook <rcook@redhat.com> - 0.0.5-6
 - Addition of missing playbook schema
 

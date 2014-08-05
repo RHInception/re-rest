@@ -41,43 +41,46 @@ def ldap_search(username, params):
         conn.simple_bind_s(
             cfg.get('LDAP_USER', ''), cfg.get('LDAP_PASSWORD', ''))
 
-        search_result = conn.search_s(
+        search_results = conn.search_s(
             str(cfg['LDAP_SEARCH_BASE']),
-            ldap.SCOPE_ONELEVEL,
-            '(uid=%s)' % ldap.filter.escape_filter_chars(username, 1),
+            ldap.SCOPE_SUBTREE,
+            '(%s=%s)' % (
+                str(cfg['LDAP_MEMBER_ID']),
+                ldap.filter.escape_filter_chars(username, 1)),
             [str(cfg['LDAP_FIELD_MATCH'])]
         )
-        current_app.logger.debug('LDAP search result: %s' % search_result)
-        if len(search_result) == 1:
-            search_result = search_result[0]
-            try:
-                print search_result[1]['manager']
-                key = search_result[1][cfg['LDAP_FIELD_MATCH']]
-                # a 1 item list is dumb
-                if type(key) is list and len(key) == 1:
-                    key = key[0]
-                allowed_groups = cfg['LDAP_LOOKUP_TABLE'][key]
-                current_app.logger.debug(
-                    'User %s has access to the following groups: %s' % (
-                        username, allowed_groups))
-                if params['group'] in allowed_groups:
+        current_app.logger.debug('LDAP search result: %s' % search_results)
+        if len(search_results) >= 1:
+            for search_result in search_results:
+                try:
+                    key = search_result[1][cfg['LDAP_FIELD_MATCH']]
+                    # a 1 item list is dumb
+                    if type(key) is list and len(key) == 1:
+                        key = key[0]
+                    allowed_groups = cfg['LDAP_LOOKUP_TABLE'][key]
+
                     current_app.logger.debug(
-                        'User %s successfully authenticated for group %s.' % (
-                            username, params['group']))
-                    return True  # <-- the ONLY return True that should exist!
-                else:
-                    current_app.logger.warn(
-                        'User %s attempted to access %s though the user is not'
-                        ' in the correct group.' % (
-                            username, params['group']))
-            except KeyError, ke:
-                current_app.logger.error(
-                    'Key was missing: %s. Denying auth for user %s' % (
-                        ke, username))
+                        'User %s has access to the following groups: %s' % (
+                            username, allowed_groups))
+                    # Using * means the user will have access to everything
+                    if '*' in allowed_groups or params['group'] in allowed_groups:
+                        current_app.logger.debug(
+                            'User %s successfully authenticated for group %s.' % (
+                                username, params['group']))
+                        return True  # <-- the ONLY return True that should exist!
+                    else:
+                        current_app.logger.warn(
+                            'User %s attempted to access %s though the user is not'
+                            ' in the correct group.' % (
+                                username, params['group']))
+                except KeyError, ke:
+                    current_app.logger.error(
+                        'Key was missing: %s. Denying auth for user %s' % (
+                            ke, username))
         else:
             current_app.logger.error(
-                '%s users returned. Denying auth for %s.' % (
-                    len(search_result), username))
+                'No groups returned. Denying auth for %s.' % (
+                    username))
 
     except ImportError:
         current_app.logger.error(
