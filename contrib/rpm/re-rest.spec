@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 1
+%global _short_release 2
 
 Name:           re-rest
 Version:        0.0.6
@@ -55,6 +55,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Tue Aug  5 2014 Steve Milner <stevem@gnulinux.net> - 0.0.6-2
+- Updated authorization logging.
+
 * Tue Aug  5 2014 Steve Milner <stevem@gnulinux.net> - 0.0.6-1
 - Configuration file changes for better authorization searches.
 

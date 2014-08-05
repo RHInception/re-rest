@@ -65,8 +65,9 @@ def ldap_search(username, params):
                     # Using * means the user will have access to everything
                     if '*' in allowed_groups or params['group'] in allowed_groups:
                         current_app.logger.debug(
-                            'User %s successfully authenticated for group %s.' % (
-                                username, params['group']))
+                            'User %s successfully authenticated for group %s'
+                            ' via ldap group %s.' % (
+                                username, params['group'], key))
                         return True  # <-- the ONLY return True that should exist!
                     else:
                         current_app.logger.warn(
@@ -74,11 +75,11 @@ def ldap_search(username, params):
                             ' in the correct group.' % (
                                 username, params['group']))
                 except KeyError, ke:
-                    current_app.logger.error(
-                        'Key was missing: %s. Denying auth for user %s' % (
-                            ke, username))
+                    current_app.logger.info(
+                        'There is no configured info for ldap group for %s. '
+                        'Moving on ...' % ke)
         else:
-            current_app.logger.error(
+            current_app.logger.warn(
                 'No groups returned. Denying auth for %s.' % (
                     username))
 
