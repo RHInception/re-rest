@@ -23,9 +23,11 @@
         "LDAP_USER": "", 
         "LDAP_PASSWORD": "",
         "LDAP_SEARCH_BASE": "dc=example,dc=com",
-        "LDAP_FIELD_MATCH": "manager",
+        "LDAP_MEMBER_ID": "memberUid",
+        "LDAP_FIELD_MATCH": "cn",
         "LDAP_LOOKUP_TABLE": {
-            "uid=amanager,dc=example,dc=com": ["group1", "group2"]
+            "someldapgroup": ["group1", "group2"],
+            "superadmins": ["*"]
         }
     }
 

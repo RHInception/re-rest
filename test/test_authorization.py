@@ -49,8 +49,8 @@ class TestAuthorization(TestCase):
                 conn = mock.MagicMock('conn')
                 conn.search_s = mock.MagicMock(
                     return_value=[(
-                        'uid=username',
-                        {'manager': 'uid=amanager,dc=example,dc=com'},
+                        'cn=someldapgroup,dc=example,dc=com',
+                        {'cn': 'someldapgroup'},
                     )]
                 )
                 conn.simple_bind_s = mock.MagicMock('simple_bind_s')
@@ -75,3 +75,50 @@ class TestAuthorization(TestCase):
                         'username', {'group': 'group1'}) is False
                     assert authorization.ldap_search(
                         'username', {'group': 'notallowed'}) is False
+
+    def test_ldap_search_for_unconfigured_group_fails(self):
+        """
+        Verify that if the ldap group is not configured access is not granted
+        """
+        with app.app_context():
+            with mock.patch.dict(
+                    'sys.modules', {'ldap': mock.MagicMock(ldap)}):
+                mldap = sys.modules['ldap']
+                conn = mock.MagicMock('conn')
+                conn.search_s = mock.MagicMock(
+                    return_value=[(
+                        'cn=thisdoesnotexist,dc=example,dc=com',
+                        {'cn': 'thisdoesnotexist'},
+                    )]
+                )
+                conn.simple_bind_s = mock.MagicMock('simple_bind_s')
+                mldap.initialize.return_value = conn
+
+                assert authorization.ldap_search(
+                    'username', {'group': 'group1'}) is False
+                assert authorization.ldap_search(
+                    'username', {'group': 'notallowed'}) is False
+
+    def test_ldap_search_with_wildcard_access(self):
+        """
+        Verify user has access to all groups if they have * listed.
+        """
+        # Check sunny day searches
+        with app.app_context():
+            with mock.patch.dict(
+                    'sys.modules', {'ldap': mock.MagicMock(ldap)}):
+                mldap = sys.modules['ldap']
+                conn = mock.MagicMock('conn')
+                conn.search_s = mock.MagicMock(
+                    return_value=[(
+                        'cn=superadmins,dc=example,dc=com',
+                        {'cn': 'superadmins'},
+                    )]
+                )
+                conn.simple_bind_s = mock.MagicMock('simple_bind_s')
+                mldap.initialize.return_value = conn
+
+                assert authorization.ldap_search(
+                    'username', {'group': 'group1'})
+                assert authorization.ldap_search(
+                    'username', {'group': 'howaboutthis'})
