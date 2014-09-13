@@ -1,0 +1,61 @@
+<!-- -*- mode: jinja2 -*- -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Release Engine - {{ title }}</title>
+    <style type="text/css"></style></head>
+  <body>
+    <h1>{{ title }}</h1>
+    <table>
+      <tbody>
+        <tr>
+          <th><img src="{{ url_for('static', filename = 'blank.gif') }}" alt="[ICO]" /></th>
+          <th><a href="?C=N;O=D">Uploaded By</a></th>
+          <th><a href="?C=N;O=D">Uploaded On</a></th>
+          <th><a href="?C=N;O=D">Modified On</a></th>
+          <th><a href="?C=N;O=D">Description</a></th>
+        </tr>
+        <tr>
+          <th colspan="6"><hr /></th>
+        </tr>
+        <tr>
+          <td>
+            <img src="{{ url_for('static', filename = 'blank.gif') }}" alt="[ICO]" />
+            <img src="{{ url_for('static', filename = 'back.gif') }}" alt="[DIR]" />
+          </td>
+          <td>
+            <a href="..">Parent Directory</a>
+          </td>
+        </tr>
+        {% for playbook in playbooks %}
+          <tr>
+            <td>
+              {# {{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id']) }} #}
+              <a href="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'json') }}"><img src="{{ url_for('static', filename = 'json-icon.png') }}" alt="[JSON]" acronym="JSON" title="Download as JSON"/></a>
+              <a href="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'yaml') }}"><img src="{{ url_for('static', filename = 'yaml-icon.png') }}" alt="[YAML]" acronym="YAML" title="Download as YAML"/></a>
+            </td>
+            <td name="{{ playbook['_id'] }}-uploaded-by">
+              someuser
+            </td>
+            <td name="{{ playbook['_id'] }}-uploaded-on">
+              2014-09-09
+            </td>
+            <td name="{{ playbook['_id'] }}-modified-on">
+              2014-09-09
+            </td>
+            <td name="{{ playbook['_id'] }}-description">
+              {{ playbook['name'] }}
+            </td>
+          </tr>
+        {% endfor %}
+        <tr>
+          <th colspan="5">
+            <hr />
+          </th>
+        </tr>
+      </tbody>
+    </table>
+    <address><a href="http://release-engine.readthedocs.org/en/latest/">Release Engine</a>/<a href="https://github.com/RHInception/re-rest">re-rest</a></address>
+  </body>
+</html>
