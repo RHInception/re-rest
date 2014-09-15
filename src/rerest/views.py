@@ -384,7 +384,11 @@ class PlaybookGroupPlaybook(MethodView):
         pb = g.db.re.playbooks.find_one({'_id': ObjectId(pbid)}, {'_id': 0})
         try:
             if ext == 'json':
-                return jsonify(pb)
+                return Response(
+                    response=json.dumps(pb, indent=4),
+                    status=200,
+                    mimetype='text/plain')
+
             elif ext == 'yaml':
                 # Get rid of the unicode stuff so the YAML dumper can handle it...
                 _pb = json.dumps(pb, default=_decode_dict)
