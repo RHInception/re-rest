@@ -29,6 +29,7 @@ from jinja2 import TemplateNotFound
 
 import yaml
 
+
 class V0DeploymentAPI(MethodView):
 
     methods = ['PUT']
@@ -255,48 +256,6 @@ class V0PlaybookAPI(MethodView):
         return jsonify({'status': 'not found'}), 404
 
 
-def make_routes(app):
-    """
-    Makes and appends routes to app.
-    """
-    deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
-    playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
-    playbook_index_view = PlaybookIndex.as_view('playbook_index')
-    playbook_group_index_view = PlaybookGroupIndex.as_view('playbook_group_index')
-    playbook_group_playbook_view = PlaybookGroupPlaybook.as_view('playbook_group_playbook')
-
-    app.add_url_rule('/api/v0/<group>/playbook/<id>/deployment/',
-                     view_func=deployment_api_view, methods=['PUT', ])
-
-    app.add_url_rule('/api/v0/playbooks/',
-                     view_func=playbook_api_view, methods=[
-                         'GET'])
-
-    app.add_url_rule('/api/v0/<group>/playbook/',
-                     view_func=playbook_api_view, methods=[
-                         'GET', 'PUT'])
-
-    app.add_url_rule('/api/v0/<group>/playbook/<id>/',
-                     view_func=playbook_api_view, methods=[
-                         'GET', 'POST', 'DELETE'])
-
-    ##################################################################
-    # Views for the web index
-    app.add_url_rule('/',
-                     view_func=playbook_index_view, methods=[
-                         'GET'])
-
-    app.add_url_rule('/<group>/',
-                     view_func=playbook_group_index_view, methods=[
-                         'GET'])
-
-    app.add_url_rule('/<group>/playbook/<pbid>.<ext>',
-                     view_func=playbook_group_playbook_view, methods=[
-                         'GET'])
-
-    app.logger.info('Added v0 routes.')
-
-
 class PlaybookIndex(MethodView):
 
     methods = ['GET']
@@ -343,6 +302,7 @@ class PlaybookIndex(MethodView):
         #     status=200,
         #     mimetype=serializer.mimetype)
 
+
 class PlaybookGroupIndex(MethodView):
 
     methods = ['GET']
@@ -369,6 +329,7 @@ class PlaybookGroupIndex(MethodView):
             return Response(
                 response="couldn't find that playbook. sry breh. <tt>[%s]</tt>" % e,
                 status=404)
+
 
 class PlaybookGroupPlaybook(MethodView):
     # print request.args.get('fmt')
@@ -405,6 +366,7 @@ class PlaybookGroupPlaybook(MethodView):
                 response="couldn't find that playbook. sry breh. <tt>[%s]</tt>" % e,
                 status=404)
 
+
 def _decode_list(data):
     rv = []
     for item in data:
@@ -416,6 +378,7 @@ def _decode_list(data):
             item = _decode_dict(item)
         rv.append(item)
     return rv
+
 
 def _decode_dict(data):
     rv = {}
@@ -430,3 +393,45 @@ def _decode_dict(data):
             value = _decode_dict(value)
         rv[key] = value
     return rv
+
+
+def make_routes(app):
+    """
+    Makes and appends routes to app.
+    """
+    deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
+    playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
+    playbook_index_view = PlaybookIndex.as_view('playbook_index')
+    playbook_group_index_view = PlaybookGroupIndex.as_view('playbook_group_index')
+    playbook_group_playbook_view = PlaybookGroupPlaybook.as_view('playbook_group_playbook')
+
+    app.add_url_rule('/api/v0/<group>/playbook/<id>/deployment/',
+                     view_func=deployment_api_view, methods=['PUT', ])
+
+    app.add_url_rule('/api/v0/playbooks/',
+                     view_func=playbook_api_view, methods=[
+                         'GET'])
+
+    app.add_url_rule('/api/v0/<group>/playbook/',
+                     view_func=playbook_api_view, methods=[
+                         'GET', 'PUT'])
+
+    app.add_url_rule('/api/v0/<group>/playbook/<id>/',
+                     view_func=playbook_api_view, methods=[
+                         'GET', 'POST', 'DELETE'])
+
+    ##################################################################
+    # Views for the web index
+    app.add_url_rule('/',
+                     view_func=playbook_index_view, methods=[
+                         'GET'])
+
+    app.add_url_rule('/<group>/',
+                     view_func=playbook_group_index_view, methods=[
+                         'GET'])
+
+    app.add_url_rule('/<group>/playbook/<pbid>.<ext>',
+                     view_func=playbook_group_playbook_view, methods=[
+                         'GET'])
+
+    app.logger.info('Added v0 routes.')
