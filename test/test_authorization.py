@@ -22,7 +22,7 @@ import mock
 
 from . import TestCase, unittest
 
-from rerest.authorization import decorators
+from rerest.authorization import callables
 from rerest.app import app
 
 
@@ -35,7 +35,7 @@ class TestAuthorization(TestCase):
         """
         no_authorization should always return True.
         """
-        assert decorators.no_authorization(None, None)
+        assert callables.no_authorization(None, None)
 
     def test_ldap_search(self):
         """
@@ -56,9 +56,9 @@ class TestAuthorization(TestCase):
                 conn.simple_bind_s = mock.MagicMock('simple_bind_s')
                 mldap.initialize.return_value = conn
 
-                assert decorators.ldap_search(
+                assert callables.ldap_search(
                     'username', {'group': 'group1'})
-                assert decorators.ldap_search(
+                assert callables.ldap_search(
                     'username', {'group': 'notallowed'}) is False
 
         # Check on error conditions
@@ -71,9 +71,9 @@ class TestAuthorization(TestCase):
                 for ex in (ImportError, mldap.SERVER_DOWN, mldap.LDAPError):
                     mldap.initialize.side_effect = ex
 
-                    assert decorators.ldap_search(
+                    assert callables.ldap_search(
                         'username', {'group': 'group1'}) is False
-                    assert decorators.ldap_search(
+                    assert callables.ldap_search(
                         'username', {'group': 'notallowed'}) is False
 
     def test_ldap_search_for_unconfigured_group_fails(self):
@@ -94,9 +94,9 @@ class TestAuthorization(TestCase):
                 conn.simple_bind_s = mock.MagicMock('simple_bind_s')
                 mldap.initialize.return_value = conn
 
-                assert decorators.ldap_search(
+                assert callables.ldap_search(
                     'username', {'group': 'group1'}) is False
-                assert decorators.ldap_search(
+                assert callables.ldap_search(
                     'username', {'group': 'notallowed'}) is False
 
     def test_ldap_search_with_wildcard_access(self):
@@ -118,7 +118,7 @@ class TestAuthorization(TestCase):
                 conn.simple_bind_s = mock.MagicMock('simple_bind_s')
                 mldap.initialize.return_value = conn
 
-                assert decorators.ldap_search(
+                assert callables.ldap_search(
                     'username', {'group': 'group1'})
-                assert decorators.ldap_search(
+                assert callables.ldap_search(
                     'username', {'group': 'howaboutthis'})

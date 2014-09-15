@@ -17,4 +17,4 @@ rerest authorization package.
 """
 
 # For backwards compatibility
-from . decorators import no_authorization, ldap_search
+from . callables import no_authorization, ldap_search
