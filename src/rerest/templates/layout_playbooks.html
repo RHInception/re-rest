@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Release Engine - {{ title }}</title>
+    <style type="text/css">
+      tr.codeblock {
+          display: none;
+      }
+    </style>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    {# <link href="{{ url_for('static', filename = 'google-code-prettify/prettify.css') }}" rel="stylesheet" /> #}
+    <link href="{{ url_for('static', filename = 'prism.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename = 'prism-show-language.css') }}" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="page-header">
+        <h1>{{ title }}</h1>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+          <table class="table table-condensed table-hover">
+            <tbody>
+              <tr>
+                <th><img src="{{ url_for('static', filename = 'blank.gif') }}" alt="[ICO]" /></th>
+                <th><a href="?C=N;O=D">Uploader</a></th>
+                <th><a href="?C=N;O=D">Uploaded</a></th>
+                <th><a href="?C=N;O=D">Modified</a></th>
+                <th><a href="?C=N;O=D">Description</a></th>
+                <th><abbr title="Show in slide-down panel">Show</abbr><span class="show-playbook-button glyphicon glyphicon glyphicon glyphicon-resize-vertical"></span></th>
+              </tr>
+              <tr>
+                <td>
+                  <img src="{{ url_for('static', filename = 'blank.gif') }}" alt="[ICO]" />
+                  <img src="{{ url_for('static', filename = 'blank.gif') }}" alt="[ICO]" />
+                  {# <img src="{{ url_for('static', filename = 'back.gif') }}" alt="[DIR]" /> #}
+                  <span class="glyphicon glyphicon-arrow-left"></span>
+                </td>
+                <td colspan="6">
+                  <a href="..">Parent Directory</a>
+                </td>
+              </tr>
+              {% for playbook in playbooks %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'json') }}" id="{{ playbook['_id'] }}-download-json"><span class="label label-info">JSON</span></a>
+                    <a href="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'yaml') }}" id="{{ playbook['_id'] }}-download-yaml"><span class="label label-info">YAML</span></a>
+                  </td>
+                  <td name="{{ playbook['_id'] }}-uploaded-by">
+                    someuser
+                  </td>
+                  <td name="{{ playbook['_id'] }}-uploaded-on">
+                    2014-09-09
+                  </td>
+                  <td name="{{ playbook['_id'] }}-modified-on">
+                    2014-09-09
+                  </td>
+                  <td name="{{ playbook['_id'] }}-description">
+                    {{ playbook['name'] }}
+                  </td>
+                  <td align="center" id="{{ playbook['_id'] }}">
+                    <span class="show-playbook-button glyphicon glyphicon glyphicon-chevron-down"></span>
+                  </td>
+                </tr>
+                <tr class="codeblock" id="{{ playbook['_id'] }}-row">
+                  <td colspan="6">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <pre class="language-json code-block"><code class="language-json" data-language="json" id="{{ playbook['_id'] }}-code-json"></code></pre>
+			{# <pre data-src="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'yaml') }}" id="{{ playbook['_id'] }}-code-json"></pre>  #}
+                     </div>
+                      <div class="col-md-6">
+                        <pre class="language-yaml code-block"><code class="language-yaml" data-language="yaml"  id="{{ playbook['_id'] }}-code-yaml"></code></pre>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="page-footer">
+        <hr />
+        <address><a href="http://release-engine.readthedocs.org/en/latest/">Release Engine</a>/<a href="https://github.com/RHInception/re-rest">re-rest</a></address>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="{{ url_for('static', filename = 'rerest-index.js') }}"></script>
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <!-- Code highlighting -->
+        <script src="{{ url_for('static', filename = 'prism.js') }}"></script>
+        <script src="{{ url_for('static', filename = 'prism-yaml.js') }}"></script>
+        {# <script src="{{ url_for('static', filename = 'google-code-prettify/prettify.js') }}"></script> #}
+        {# <script src="{{ url_for('static', filename = 'google-code-prettify/lang-yaml.js') }}"></script> #}
+      </div>
+    </div>
+  </body>
+</html>

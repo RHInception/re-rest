@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Release Engine - {{ title }}</title>
+    <style type="text/css"></style>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="page-header">
+        <h1>{{ title }}</h1>
+      </div>
+      <div class="row">
+	<div class="col-md-2">
+	</div>
+        <div class="col-md-6">
+          <table class="table table-condensed table-hover">
+            <tbody>
+              <tr>
+                <th><img src="{{ url_for('static', filename = 'blank.gif') }}" alt="[ICO]" /></th>
+                <th><a href="?C=N;O=D">Group</a></th>
+                <th><a href="?C=M;O=A">Playbooks</a></th>
+              </tr>
+              {% for group in groups %}
+              <tr>
+                <td>
+                  <img src="{{ url_for('static', filename = 'folder.gif') }}" alt="[DIR]" />
+                </td>
+                <td>
+                  <a href="{{group[0]}}">{{ group[0] }}</a>
+                </td>
+                <td>
+                  {{ group[1] }}
+                </td>
+              </tr>
+              {% endfor %}
+              <tr><th colspan="5"><hr /></th></tr>
+            </tbody>
+          </table>
+        </div>
+	<div class="col-md-4">
+	</div>
+      </div>
+      <div class="page-footer">
+        <address><a href="http://release-engine.readthedocs.org/en/latest/">Release Engine</a>/<a href="https://github.com/RHInception/re-rest">re-rest</a></address>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+      </div>
+    </div>
+  </body>
+</html>
