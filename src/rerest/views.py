@@ -422,16 +422,17 @@ def make_routes(app):
 
     ##################################################################
     # Views for the web index
-    app.add_url_rule('/',
-                     view_func=playbook_index_view, methods=[
-                         'GET'])
+    if app.config.get('PLAYBOOK_UI', False):
+        app.add_url_rule('/',
+                         view_func=playbook_index_view, methods=[
+                             'GET'])
 
-    app.add_url_rule('/<group>/',
-                     view_func=playbook_group_index_view, methods=[
-                         'GET'])
+        app.add_url_rule('/<group>/',
+                         view_func=playbook_group_index_view, methods=[
+                             'GET'])
 
-    app.add_url_rule('/<group>/playbook/<pbid>.<ext>',
-                     view_func=playbook_group_playbook_view, methods=[
-                         'GET'])
+        app.add_url_rule('/<group>/playbook/<pbid>.<ext>',
+                         view_func=playbook_group_playbook_view, methods=[
+                             'GET'])
 
     app.logger.info('Added v0 routes.')

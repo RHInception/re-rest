@@ -17,6 +17,7 @@
         "HOST": "127.0.0.1",
         "PORT": 27017
     },
+    "PLAYBOOK_UI": false,
     "AUTHORIZATION_CALLABLE": "rerest.authorization:no_authorization",
     "AUTHORIZATION_CONFIG": {
         "LDAP_URI": "ldap://127.0.0.1",
