@@ -256,7 +256,9 @@ class V0PlaybookAPI(MethodView):
         return jsonify({'status': 'not found'}), 404
 
 
-class PlaybookIndex(MethodView):
+# NOTE: The following are OFF by default and not considered ready for use
+#       due to no unittesting.
+class PlaybookIndex(MethodView):  # pragma: no cover
 
     methods = ['GET']
     #: Decorators to be applied to all API methods in this class.
@@ -303,7 +305,7 @@ class PlaybookIndex(MethodView):
         #     mimetype=serializer.mimetype)
 
 
-class PlaybookGroupIndex(MethodView):
+class PlaybookGroupIndex(MethodView):  # pragma: no cover
 
     methods = ['GET']
     #: Decorators to be applied to all API methods in this class.
@@ -331,7 +333,7 @@ class PlaybookGroupIndex(MethodView):
                 status=404)
 
 
-class PlaybookGroupPlaybook(MethodView):
+class PlaybookGroupPlaybook(MethodView):  # pragma: no cover
     # print request.args.get('fmt')
     methods = ['GET']
     #: Decorators to be applied to all API methods in this class.
@@ -367,7 +369,7 @@ class PlaybookGroupPlaybook(MethodView):
                 status=404)
 
 
-def _decode_list(data):
+def _decode_list(data):  # pragma: no cover
     rv = []
     for item in data:
         if isinstance(item, unicode):
@@ -380,7 +382,7 @@ def _decode_list(data):
     return rv
 
 
-def _decode_dict(data):
+def _decode_dict(data):  # pragma: no cover
     rv = {}
     for key, value in data.iteritems():
         if isinstance(key, unicode):
@@ -393,6 +395,9 @@ def _decode_dict(data):
             value = _decode_dict(value)
         rv[key] = value
     return rv
+
+
+# END untested code which is off by default ---
 
 
 def make_routes(app):
