@@ -49,38 +49,44 @@ def ldap_search(username, params):
                 ldap.filter.escape_filter_chars(username, 1)),
             [str(cfg['LDAP_FIELD_MATCH'])]
         )
-        current_app.logger.debug('LDAP search result: %s' % search_results)
+        current_app.logger.debug('LDAP search result: %s' % str(search_results))
+
+        allowed_groups = []
+        has_access = False
         if len(search_results) >= 1:
+            keys = []
             for search_result in search_results:
+                keys += search_result[1][cfg['LDAP_FIELD_MATCH']]
+
+            for key in keys:
                 try:
-                    keys = search_result[1][cfg['LDAP_FIELD_MATCH']]
-                    # force a list
-                    if type(keys) is not list:
-                        keys = [keys]
+                    allowed_groups += cfg['LDAP_LOOKUP_TABLE'][key]
 
-                    for key in keys:
-                        allowed_groups = cfg['LDAP_LOOKUP_TABLE'][key]
-
+                    # Using * means the user will have access to everything
+                    if ('*' in allowed_groups or
+                            params['group'] in allowed_groups):
                         current_app.logger.debug(
-                            'User %s has access to these groups: %s' % (
-                                username, allowed_groups))
-                        # Using * means the user will have access to everything
-                        if ('*' in allowed_groups or
-                                params['group'] in allowed_groups):
-                            current_app.logger.debug(
-                                'User %s successfully authenticated for group'
-                                ' %s via ldap group %s.' % (
-                                    username, params['group'], key))
-                            # This is the ONLY return True that should exist!
-                            return (True, keys)
-                    current_app.logger.warn(
-                        'User %s attempted to access %s though the user is not'
-                        ' in the correct group.' % (
-                            username, params['group']))
+                            'User %s successfully authenticated for group'
+                            ' %s via ldap group %s.' % (
+                                username, params['group'], key))
+                        # This is the ONLY place that should set True
+                        has_access = True
+
                 except KeyError, ke:
                     current_app.logger.info(
-                        'There is no configured info for ldap group for %s. '
-                        'Moving on ...' % ke)
+                        'There is no configured info for ldap group '
+                        'for %s. Moving on ...' % ke)
+            current_app.logger.debug(
+                'User %s has access to these groups: %s' % (
+                   username, allowed_groups))
+
+            if has_access:
+                return (True, keys)
+            current_app.logger.warn(
+                'User %s attempted to access %s though the user is not'
+                ' in the correct group.' % (
+                    username, params['group']))
+
         else:
             current_app.logger.warn(
                 'No groups returned. Denying auth for %s.' % (

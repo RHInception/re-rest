@@ -49,10 +49,10 @@ class TestAuthorizationCallables(TestCase):
                 mldap = sys.modules['ldap']
                 conn = mock.MagicMock('conn')
                 conn.search_s = mock.MagicMock(
-                    return_value=[(
+                    return_value=[[
                         'cn=someldapgroup,dc=example,dc=com',
-                        {'cn': 'someldapgroup'},
-                    )]
+                        {'cn': ['someldapgroup']},
+                    ]]
                 )
                 conn.simple_bind_s = mock.MagicMock('simple_bind_s')
                 mldap.initialize.return_value = conn
