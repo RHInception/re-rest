@@ -23,6 +23,8 @@ from flask import request, json
 
 from . import TestCase, unittest
 
+from contextlib import nested
+
 from rerest import mq
 from rerest.mq import JobCreator
 
@@ -46,35 +48,43 @@ class TestV0DeploymentEndpoint(TestCase):
         Test creating new deployment requests.
         """
         # Check with good input
-        with self.test_client() as c:
-            response = c.put(
-                '/api/v0/test/playbook/12345/deployment/',
-                environ_overrides={'REMOTE_USER': 'testuser'})
-            assert request.view_args['group'] == 'test'
-            assert request.view_args['id'] == '12345'
-            assert response.status_code == 201
-            assert response.mimetype == 'application/json'
-            result = json.loads(response.data)
-            assert result['status'] == 'created'
-            assert result['id'] == 1
+        with mock.patch('pymongo.MongoClient') as mc:
+            mc.db.re.playbooks.find.return_value = [{
+                'execution': [{'hosts': ['host123']}]}]
 
-        # Check with bad input
-        with self.test_client() as c:
-            response = c.post('/api/v0//deployment/')
-            assert response.status_code == 404
+            with self.test_client() as c:
+                response = c.put(
+                    '/api/v0/test/playbook/5408c8b002b67c0013ac3737/deployment/',
+                    environ_overrides={'REMOTE_USER': 'testuser'})
+                assert request.view_args['group'] == 'test'
+                assert request.view_args['id'] == '5408c8b002b67c0013ac3737'
+                assert response.status_code == 201
+                assert response.mimetype == 'application/json'
+                result = json.loads(response.data)
+                assert result['status'] == 'created'
+                assert result['id'] == 1
+
+            # Check with bad input
+            with self.test_client() as c:
+                response = c.post('/api/v0//deployment/')
+                assert response.status_code == 404
 
     def test_create_new_deployment_without_user(self):
         """
         New deployments should fail without a user.
         """
-        # Check with good input
-        with self.test_client() as c:
-            response = c.put(
-                '/api/v0/test/playbook/12345/deployment/')
-            assert request.view_args['group'] == 'test'
-            assert request.view_args['id'] == '12345'
-            assert response.status_code == 401
-            assert response.mimetype == 'application/json'
-            result = json.loads(response.data)
-            assert result['status'] == 'error'
-            assert result['message'] == 'unauthorized'
+        with mock.patch('pymongo.MongoClient') as mc:
+            mc.db.re.playbooks.find.return_value = [{
+                'execution': [{'hosts': ['host123']}]}]
+
+            # Check with good input
+            with self.test_client() as c:
+                response = c.put(
+                    '/api/v0/test/playbook/5408c8b002b67c0013ac3737/deployment/')
+                assert request.view_args['group'] == 'test'
+                assert request.view_args['id'] == '5408c8b002b67c0013ac3737'
+                assert response.status_code == 401
+                assert response.mimetype == 'application/json'
+                result = json.loads(response.data)
+                assert result['status'] == 'error'
+                assert result['message'] == 'unauthorized'

@@ -23,7 +23,7 @@ def no_authorization(username, params):  # pragma nocover
     """
     Helpful when debugging locally. Don't use this in production.
     """
-    return True
+    return (True, [])
 
 
 def ldap_search(username, params):
@@ -53,27 +53,30 @@ def ldap_search(username, params):
         if len(search_results) >= 1:
             for search_result in search_results:
                 try:
-                    key = search_result[1][cfg['LDAP_FIELD_MATCH']]
-                    # a 1 item list is dumb
-                    if type(key) is list and len(key) == 1:
-                        key = key[0]
-                    allowed_groups = cfg['LDAP_LOOKUP_TABLE'][key]
+                    keys = search_result[1][cfg['LDAP_FIELD_MATCH']]
+                    # force a list
+                    if type(keys) is not list:
+                        keys = [keys]
 
-                    current_app.logger.debug(
-                        'User %s has access to the following groups: %s' % (
-                            username, allowed_groups))
-                    # Using * means the user will have access to everything
-                    if '*' in allowed_groups or params['group'] in allowed_groups:
+                    for key in keys:
+                        allowed_groups = cfg['LDAP_LOOKUP_TABLE'][key]
+
                         current_app.logger.debug(
-                            'User %s successfully authenticated for group %s'
-                            ' via ldap group %s.' % (
-                                username, params['group'], key))
-                        return True  # <-- the ONLY return True that should exist!
-                    else:
-                        current_app.logger.warn(
-                            'User %s attempted to access %s though the user is not'
-                            ' in the correct group.' % (
-                                username, params['group']))
+                            'User %s has access to these groups: %s' % (
+                                username, allowed_groups))
+                        # Using * means the user will have access to everything
+                        if ('*' in allowed_groups or
+                                params['group'] in allowed_groups):
+                            current_app.logger.debug(
+                                'User %s successfully authenticated for group'
+                                ' %s via ldap group %s.' % (
+                                    username, params['group'], key))
+                            # This is the ONLY return True that should exist!
+                            return (True, keys)
+                    current_app.logger.warn(
+                        'User %s attempted to access %s though the user is not'
+                        ' in the correct group.' % (
+                            username, params['group']))
                 except KeyError, ke:
                     current_app.logger.info(
                         'There is no configured info for ldap group for %s. '
@@ -93,4 +96,4 @@ def ldap_search(username, params):
         current_app.logger.error(
             'General ldap error: %s. Denying auth attempt for user %s.' % (
                 le, username))
-    return False
+    return (False, [])

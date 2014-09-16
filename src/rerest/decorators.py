@@ -43,12 +43,57 @@ def check_group(f):
         mod, meth = current_app.config['AUTHORIZATION_CALLABLE'].split(':')
         check_auth = getattr(__import__(mod, fromlist=['True']), meth)
 
-        if check_auth(request.remote_user, request.view_args):
+        if check_auth(request.remote_user, request.view_args)[0]:
             current_app.logger.debug(
                 'User %s successfully authenticated for %s' % (
                     request.remote_user, request.path))
             return f(*args, **kwargs)
-        current_app.logger.debug(
+        current_app.logger.warn(
+            'User %s failed authentication for %s' % (
+                request.remote_user, request.path))
+        return jsonify({'status': 'error', 'message': 'forbidden'}), 403
+    return decorator
+
+
+def check_environment_and_group(f):
+    """
+    Ensure a user has the proper permission to access a group
+    and play in an environment
+    """
+
+    def decorator(*args, **kwargs):
+        # First check access to the requested group
+        mod, meth = current_app.config['AUTHORIZATION_CALLABLE'].split(':')
+        check_auth = getattr(__import__(mod, fromlist=['True']), meth)
+
+        auth_check = check_auth(request.remote_user, request.view_args)
+        if auth_check[0]:
+            current_app.logger.debug(
+                'User %s successfully authenticated for %s' % (
+                    request.remote_user, request.path))
+
+            # Now check for environment permissions
+            emod, emeth = current_app.config[
+                'AUTHORIZATION_ENVIRONMENT_CALLABLE'].split(':')
+            check_env_auth = getattr(
+                __import__(emod, fromlist=['True']), emeth)
+
+            if check_env_auth(
+                    request.remote_user, request.view_args.get('id', None),
+                    auth_check[1]):
+                current_app.logger.debug(
+                    'User %s has access to all hosts listed in %s' % (
+                        request.remote_user, request.view_args['id']))
+                return f(*args, **kwargs)
+
+            current_app.logger.warn(
+                'User %s does not have permission to all hosts in %s' % (
+                    request.remote_user, request.view_args['id']))
+            return jsonify({
+                'status': 'error',
+                'message': ('Your user does not have access to all the '
+                            'hosts in the given playbook.')}), 403
+        current_app.logger.warn(
             'User %s failed authentication for %s' % (
                 request.remote_user, request.path))
         return jsonify({'status': 'error', 'message': 'forbidden'}), 403

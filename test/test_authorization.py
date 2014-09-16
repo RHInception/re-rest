@@ -22,11 +22,12 @@ import mock
 
 from . import TestCase, unittest
 
-from rerest.authorization import callables
+from flask import g
+from rerest.authorization import callables, envrestrictions
 from rerest.app import app
 
 
-class TestAuthorization(TestCase):
+class TestAuthorizationCallables(TestCase):
     """
     Tests for the authorization callables.
     """
@@ -56,10 +57,12 @@ class TestAuthorization(TestCase):
                 conn.simple_bind_s = mock.MagicMock('simple_bind_s')
                 mldap.initialize.return_value = conn
 
-                assert callables.ldap_search(
+                r = callables.ldap_search(
                     'username', {'group': 'group1'})
+                print r
+                assert r[0]
                 assert callables.ldap_search(
-                    'username', {'group': 'notallowed'}) is False
+                    'username', {'group': 'notallowed'})[0] is False
 
         # Check on error conditions
         # If SERVER_DOWN, LDAPError or ImportError is raised the user should
@@ -72,9 +75,9 @@ class TestAuthorization(TestCase):
                     mldap.initialize.side_effect = ex
 
                     assert callables.ldap_search(
-                        'username', {'group': 'group1'}) is False
+                        'username', {'group': 'group1'})[0] is False
                     assert callables.ldap_search(
-                        'username', {'group': 'notallowed'}) is False
+                        'username', {'group': 'notallowed'})[0] is False
 
     def test_ldap_search_for_unconfigured_group_fails(self):
         """
@@ -95,9 +98,9 @@ class TestAuthorization(TestCase):
                 mldap.initialize.return_value = conn
 
                 assert callables.ldap_search(
-                    'username', {'group': 'group1'}) is False
+                    'username', {'group': 'group1'})[0] is False
                 assert callables.ldap_search(
-                    'username', {'group': 'notallowed'}) is False
+                    'username', {'group': 'notallowed'})[0] is False
 
     def test_ldap_search_with_wildcard_access(self):
         """
@@ -122,3 +125,31 @@ class TestAuthorization(TestCase):
                     'username', {'group': 'group1'})
                 assert callables.ldap_search(
                     'username', {'group': 'howaboutthis'})
+
+
+class TestAuthorizationEnvRestrictions(TestCase):
+    """
+    Tests for the environment restriction callables.
+    """
+
+    def test_environment_allow_all(self):
+        """
+        environment_allow_all always returns True.
+        """
+        assert envrestrictions.environment_allow_all('user', '', [])
+
+    def test_environment_flat_files(self):
+        """
+        Verify ldap search only allows if a user is in an expected group.
+        """
+        with app.app_context():
+            with mock.patch('pymongo.MongoClient') as mc:
+                mc.db.re.playbooks.find.return_value = [{
+                    'execution': [{'hosts': ['host10']}]}]
+                g.db = mc.db
+                # This grouping should have access
+                assert envrestrictions.environment_flat_files(
+                    'username', '5408c8b002b67c0013ac3737', ['superadmins'])
+                # This grouping should not have access
+                assert envrestrictions.environment_flat_files(
+                    'username', '5408c8b002b67c0013ac3737', ['someldapgroup']) is False

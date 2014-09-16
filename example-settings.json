@@ -19,6 +19,7 @@
     },
     "PLAYBOOK_UI": false,
     "AUTHORIZATION_CALLABLE": "rerest.authorization:no_authorization",
+    "AUTHORIZATION_ENVIRONMENT_CALLABLE": "rerest.authorization.envrestrictions:environment_flat_files",
     "AUTHORIZATION_CONFIG": {
         "LDAP_URI": "ldap://127.0.0.1",
         "LDAP_USER": "", 
@@ -30,6 +31,15 @@
             "someldapgroup": ["group1", "group2"],
             "superadmins": ["*"]
         }
+    },
+    "GROUP_ENVIRONMENT_MAPPING": {
+        "someldapgroup": ["dev", "qa"],
+        "superadmins": ["dev", "qa", "stage", "production"]
+    },
+    "ENVIRONMENT_FLAT_FILES": {
+        "dev": "test/dev.txt",
+        "qa": "test/qa.txt",
+        "stage": "test/stage.txt",
+        "production": "test/production.txt"
     }
-
 }

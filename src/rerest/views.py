@@ -17,13 +17,15 @@ Views.
 """
 from bson import ObjectId
 from bson.errors import InvalidId
-from flask import current_app, jsonify, json, request, g, Response, render_template
+from flask import (
+    current_app, jsonify, json, request, g, Response, render_template)
 
 from flask.views import MethodView
 
 from rerest import mq, serialize
 from rerest.decorators import (
-    remote_user_required, require_database, inject_request_id, check_group)
+    remote_user_required, require_database, inject_request_id,
+    check_group, check_environment_and_group)
 from rerest.validators import validate_playbook, ValidationError
 from jinja2 import TemplateNotFound
 
@@ -34,7 +36,9 @@ class V0DeploymentAPI(MethodView):
 
     methods = ['PUT']
     #: Decorators to be applied to all API methods in this class.
-    decorators = [remote_user_required, check_group, inject_request_id]
+    decorators = [
+        remote_user_required, check_environment_and_group,
+        inject_request_id, require_database]
 
     def put(self, group, id):
         """
@@ -284,7 +288,7 @@ class PlaybookIndex(MethodView):  # pragma: no cover
             print e
             print "##########################################"
             return Response(
-                response="couldn't find that playbook. sry breh. <tt>[%s]</tt>" % e,
+                response="Playbook not found.",
                 status=404)
 
         # # One playbook
@@ -329,7 +333,7 @@ class PlaybookGroupIndex(MethodView):  # pragma: no cover
             print e
             print "##########################################"
             return Response(
-                response="couldn't find that playbook. sry breh. <tt>[%s]</tt>" % e,
+                response="Playbook not found.",
                 status=404)
 
 
@@ -353,10 +357,11 @@ class PlaybookGroupPlaybook(MethodView):  # pragma: no cover
                     mimetype='text/plain')
 
             elif ext == 'yaml':
-                # Get rid of the unicode stuff so the YAML dumper can handle it...
+                # Get rid of the unicode stuff so YAML dumper can handle it...
                 _pb = json.dumps(pb, default=_decode_dict)
                 return Response(
-                    response=yaml.dump(json.loads(_pb, object_hook=_decode_dict)),
+                    response=yaml.dump(json.loads(
+                        _pb, object_hook=_decode_dict)),
                     status=200,
                     mimetype='text/plain')
 
@@ -365,7 +370,7 @@ class PlaybookGroupPlaybook(MethodView):  # pragma: no cover
             print e
             print "##########################################"
             return Response(
-                response="couldn't find that playbook. sry breh. <tt>[%s]</tt>" % e,
+                response="Playbook not found.",
                 status=404)
 
 
@@ -407,8 +412,10 @@ def make_routes(app):
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
     playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
     playbook_index_view = PlaybookIndex.as_view('playbook_index')
-    playbook_group_index_view = PlaybookGroupIndex.as_view('playbook_group_index')
-    playbook_group_playbook_view = PlaybookGroupPlaybook.as_view('playbook_group_playbook')
+    playbook_group_index_view = PlaybookGroupIndex.as_view(
+        'playbook_group_index')
+    playbook_group_playbook_view = PlaybookGroupPlaybook.as_view(
+        'playbook_group_playbook')
 
     app.add_url_rule('/api/v0/<group>/playbook/<id>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
