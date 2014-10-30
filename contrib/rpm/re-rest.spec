@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 1
+%global _short_release 2
 
 Name:           re-rest
 Version:        0.0.7
@@ -55,6 +55,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Thu Oct 30 2014 Ryan Cook <rcook@redhat.com> - 0.0.7-2
+- True/false parameter for SSL.
+
 * Tue Sep 16 2014 Steve Milner <stevem@gnulinux.net> - 0.0.7-1
 - Environment based authorization now available.
 
