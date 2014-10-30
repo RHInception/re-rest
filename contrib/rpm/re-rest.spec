@@ -5,10 +5,10 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 2
+%global _short_release 1
 
 Name:           re-rest
-Version:        0.0.7
+Version:        0.0.8
 Release:        %{_short_release}%{?dist}
 Summary:        Simple REST Api for release automation
 
@@ -55,7 +55,7 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
-* Thu Oct 30 2014 Ryan Cook <rcook@redhat.com> - 0.0.7-2
+* Thu Oct 30 2014 Ryan Cook <rcook@redhat.com> - 0.0.8-1
 - True/false parameter for SSL.
 
 * Tue Sep 16 2014 Steve Milner <stevem@gnulinux.net> - 0.0.7-1
