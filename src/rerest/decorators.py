@@ -124,11 +124,12 @@ def require_database(f):
             import pymongo
             mongo_cfg = current_app.config['MONGODB_SETTINGS']
             g.db = pymongo.MongoClient(
-                'mongodb://%s:%s@%s:%s/%s' % (
+                'mongodb://%s:%s@%s:%s/%s?ssl=%s' % (
                     urllib.quote(mongo_cfg['USERNAME']),
                     urllib.quote(mongo_cfg['PASSWORD']),
                     mongo_cfg['HOST'],
                     int(mongo_cfg['PORT']),
-                    mongo_cfg['DB']))
+                    mongo_cfg['DB'],
+                    mongo_cfg['SSL']))
         return f(*args, **kwargs)
     return decorator

@@ -15,7 +15,8 @@
         "USERNAME": "username",
         "PASSWORD": "password",
         "HOST": "127.0.0.1",
-        "PORT": 27017
+        "PORT": 27017,
+        "SSL": "true"
     },
     "PLAYBOOK_UI": false,
     "AUTHORIZATION_CALLABLE": "rerest.authorization:no_authorization",
