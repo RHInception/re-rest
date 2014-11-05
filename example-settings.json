@@ -5,10 +5,11 @@
     "LOGFILE": "rerest.log",
     "MQ": {
         "SERVER": "127.0.0.1",
-        "PORT": 5672,
+        "PORT": 5671,
         "USER": "guest",
         "PASSWORD": "guest",
-        "VHOST": "/"
+        "VHOST": "/",
+        "SSL": true
     },
     "MONGODB_SETTINGS": {
         "DB": "test",
@@ -23,7 +24,7 @@
     "AUTHORIZATION_ENVIRONMENT_CALLABLE": "rerest.authorization.envrestrictions:environment_flat_files",
     "AUTHORIZATION_CONFIG": {
         "LDAP_URI": "ldap://127.0.0.1",
-        "LDAP_USER": "", 
+        "LDAP_USER": "",
         "LDAP_PASSWORD": "",
         "LDAP_SEARCH_BASE": "dc=example,dc=com",
         "LDAP_MEMBER_ID": "memberUid",

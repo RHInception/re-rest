@@ -50,11 +50,7 @@ class V0DeploymentAPI(MethodView):
                     group, request.request_id, request.remote_user))
             mq_data = current_app.config['MQ']
             jc = mq.JobCreator(
-                server=mq_data['SERVER'],
-                port=int(mq_data['PORT']),
-                user=mq_data['USER'],
-                password=mq_data['PASSWORD'],
-                vhost=mq_data['VHOST'],
+                mq_data,
                 logger=current_app.logger,
                 request_id=request.request_id
             )

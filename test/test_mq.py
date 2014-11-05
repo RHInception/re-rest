@@ -30,6 +30,14 @@ from . import TestCase, unittest
 mq.pika = mock.Mock(pika)
 mq.pika.reset_mock()
 
+MQ_CONFIG = {
+    "SERVER": 'server',
+    "PORT": 5672,
+    "USER": 'user',
+    "PASSWORD": 'pass',
+    "VHOST": 'vhost'
+}
+
 
 class TestJobCreator(TestCase):
 
@@ -43,8 +51,7 @@ class TestJobCreator(TestCase):
         """
         Test JobCreator is created as expected.
         """
-        jc = mq.JobCreator(
-            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
+        jc = mq.JobCreator(MQ_CONFIG, logging.getLogger(), 1)
         assert mq.pika.BlockingConnection.call_count == 1
         assert jc._channel.queue_declare.call_count == 1
         jc._channel.queue_declare.assert_called_with(auto_delete=True)
@@ -53,8 +60,7 @@ class TestJobCreator(TestCase):
         """
         Test start_job.
         """
-        jc = mq.JobCreator(
-            'server', 5672, 'user', 'pass', 'vhost', logging.getLogger(), 1)
+        jc = mq.JobCreator(MQ_CONFIG, logging.getLogger(), 1)
         assert jc.create_job('group', '12345') is None  # No return value
         assert jc._channel.basic_publish.call_count == 1
         assert jc._channel.basic_publish.call_args[0][0] == 're'
@@ -67,8 +73,7 @@ class TestJobCreator(TestCase):
         Test confirmation response.
         """
         logger = mock.MagicMock()
-        jc = mq.JobCreator(
-            'server', 5672, 'user', 'pass', 'vhost', logger, 1)
+        jc = mq.JobCreator(MQ_CONFIG, logger, 1)
         jc._channel.reset_mock()
         jc.create_job('group', '12345')
 
