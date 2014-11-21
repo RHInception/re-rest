@@ -99,18 +99,18 @@ class TestJobCreator(TestCase):
 
         jc.get_confirmation('group')
         assert jc._channel.basic_reject.call_count == 1
-        assert logger.error.call_count == 1
+        assert logger.error.call_count == 2
 
         logger.reset_mock()
         jc._channel.reset_mock()
 
         jc._channel.basic_ack.side_effect = pika.exceptions.ChannelClosed
         jc.get_confirmation('group')
-        assert logger.error.call_count == 1
+        self.assertEqual(logger.error.call_count, 2)
 
         logger.reset_mock()
         jc._channel.reset_mock()
 
         jc._channel.basic_ack.side_effect = ValueError
         jc.get_confirmation('group')
-        assert logger.error.call_count == 1
+        self.assertEqual(logger.error.call_count, 2)

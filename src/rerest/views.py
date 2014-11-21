@@ -63,7 +63,7 @@ class V0DeploymentAPI(MethodView):
                 if dynamic is None:
                     raise ValueError('No data')
             except ValueError:
-                current_app.logger.debug(
+                current_app.logger.info(
                     'No data sent in request for dynamic variables.')
                 dynamic = {}
             current_app.logger.info(
@@ -127,7 +127,7 @@ class V0PlaybookAPI(MethodView):
 
         if id is None:
             # List playbooks
-            current_app.logger.debug(
+            current_app.logger.info(
                 'User %s is listing known playbooks for group %s. '
                 'Request id: %s' % (
                     request.remote_user, group, request.request_id))
@@ -189,6 +189,7 @@ class V0PlaybookAPI(MethodView):
             return jsonify(
                 {'status': 'bad request', 'message': str(ke)}), 400
         except ValidationError:
+            current_app.logger.error("The playbook does not conform to the spec")
             return jsonify({
                 'status': 'bad request',
                 'message': 'The playbook does not conform to the spec.'}), 400
@@ -227,6 +228,7 @@ class V0PlaybookAPI(MethodView):
                 return jsonify({
                     'status': 'bad request', 'message': str(ke)}), 400
             except ValidationError:
+                current_app.logger.error("The playbook does not conform to the spec")
                 return jsonify({
                     'status': 'bad request',
                     'message': ('The playbook does not '
@@ -243,6 +245,7 @@ class V0PlaybookAPI(MethodView):
         try:
             oid = ObjectId(id)
         except InvalidId:
+            current_app.logger.error("The playbook ID given is invalid: %s" % str(id))
             return jsonify({'status': 'bad request', 'message': 'Bad id'}), 400
 
         current_app.logger.info(

@@ -213,7 +213,7 @@ use the supplied port.
                     properties=properties)
                 return job_id
             except ValueError, vex:
-                self.logger.info(
+                self.logger.error(
                     'Rejecting bus response due to error for '
                     'request id %s' % self.request_id)
                 self._channel.basic_reject(method_frame.delivery_tag)

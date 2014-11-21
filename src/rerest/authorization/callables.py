@@ -73,7 +73,7 @@ def ldap_search(username, params):
                         has_access = True
 
                 except KeyError, ke:
-                    current_app.logger.info(
+                    current_app.logger.debug(
                         'There is no configured info for ldap group '
                         'for %s. Moving on ...' % ke)
             current_app.logger.debug(

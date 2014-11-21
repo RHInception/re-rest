@@ -81,12 +81,12 @@ def check_environment_and_group(f):
             if check_env_auth(
                     request.remote_user, request.view_args.get('id', None),
                     auth_check[1]):
-                current_app.logger.debug(
+                current_app.logger.info(
                     'User %s has access to all hosts listed in %s' % (
                         request.remote_user, request.view_args['id']))
                 return f(*args, **kwargs)
 
-            current_app.logger.warn(
+            current_app.logger.info(
                 'User %s does not have permission to all hosts in %s' % (
                     request.remote_user, request.view_args['id']))
             return jsonify({

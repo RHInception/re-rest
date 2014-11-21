@@ -50,7 +50,7 @@ def environment_flat_files(username, playbook, maplist):
 
     # Remove dupes
     allowed_envs = set(allowed_envs)
-    current_app.logger.debug(
+    current_app.logger.info(
         'User %s has access the following environments: %s' % (
             username, ', '.join(allowed_envs)))
     # Populate hosts with everything the playbook wants to touch
