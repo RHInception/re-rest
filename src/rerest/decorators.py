@@ -30,7 +30,9 @@ def remote_user_required(f):
     def decorator(*args, **kwargs):
         if not request.remote_user:
             return jsonify({'status': 'error', 'message': 'unauthorized'}), 401
-            ContextFilter.set_field('user_id', request.remote_user)
+
+        ContextFilter.set_field('user_id', request.remote_user)
+        ContextFilter.set_field('source_ip', request.remote_addr)
         return f(*args, **kwargs)
     return decorator
 
