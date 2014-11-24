@@ -17,12 +17,14 @@ Default authorization callables.
 """
 
 from flask import current_app
+from rerest.contextfilter import ContextFilter
 
 
 def no_authorization(username, params):  # pragma nocover
     """
     Helpful when debugging locally. Don't use this in production.
     """
+    ContextFilter.set_field('user_id', username)
     return (True, [])
 
 
@@ -31,6 +33,7 @@ def ldap_search(username, params):
     Searches ldap for a user and then matches and tries to match up an ldap
     field to a lookup.
     """
+    ContextFilter.set_field('user_id', username)
     try:
         import ldap
         import ldap.filter

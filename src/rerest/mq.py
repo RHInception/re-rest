@@ -23,6 +23,8 @@ from flask import json
 
 import ssl
 
+from rerest.contextfilter import ContextFilter
+
 
 class JobCreator(object):
     """
@@ -194,6 +196,7 @@ use the supplied port.
                 self.logger.info('Parsing bus response for request id %s' % (
                     self.request_id))
                 job_id = json.loads(body)['id']
+                ContextFilter.set_field('deployment_id', job_id)
                 self._channel.basic_ack(method_frame.delivery_tag)
                 self.logger.info('Got job id of %s for request id %s' % (
                     job_id, self.request_id))

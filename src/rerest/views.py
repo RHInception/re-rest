@@ -23,6 +23,7 @@ from flask import (
 from flask.views import MethodView
 
 from rerest import mq, serialize
+from rerest.contextfilter import ContextFilter
 from rerest.decorators import (
     remote_user_required, require_database, inject_request_id,
     check_group, check_environment_and_group)
@@ -45,6 +46,8 @@ class V0DeploymentAPI(MethodView):
         Creates a new deployment.
         """
         try:
+            ContextFilter.set_field('user_id', request.remote_user)
+            ContextFilter.set_field('source_ip', request.remote_addr)
             current_app.logger.info(
                 'Starting release for %s as %s for user %s' % (
                     group, request.request_id, request.remote_user))
@@ -54,6 +57,7 @@ class V0DeploymentAPI(MethodView):
                 logger=current_app.logger,
                 request_id=request.request_id
             )
+            ContextFilter.set_field('playbook_id', id)
             current_app.logger.info(
                 'Creating job for group %s, playbook %s' % (
                     group, id))
@@ -127,6 +131,7 @@ class V0PlaybookAPI(MethodView):
 
         if id is None:
             # List playbooks
+            ContextFilter.set_field('user_id', request.remote_user)
             current_app.logger.info(
                 'User %s is listing known playbooks for group %s. '
                 'Request id: %s' % (
@@ -166,12 +171,13 @@ class V0PlaybookAPI(MethodView):
 
     def put(self, group):
         """
-        Creates a new playbook for a group..
+        Creates a new playbook for a group.
         """
         # Serializer so we can handle json and yaml
         serializer = serialize.Serialize(request.args.get(
             'format', 'json'))
 
+        ContextFilter.set_field('user_id', request.remote_user)
         # Gets the formatter info
         current_app.logger.info(
             'Creating a new playbook for group %s by user %s. '
@@ -202,6 +208,7 @@ class V0PlaybookAPI(MethodView):
         serializer = serialize.Serialize(request.args.get(
             'format', 'json'))
 
+        ContextFilter.set_field('user_id', request.remote_user)
         current_app.logger.info(
             'Updating a playbook for group %s by user %s. '
             'Request id: %s' % (
@@ -248,6 +255,7 @@ class V0PlaybookAPI(MethodView):
             current_app.logger.error("The playbook ID given is invalid: %s" % str(id))
             return jsonify({'status': 'bad request', 'message': 'Bad id'}), 400
 
+        ContextFilter.set_field('user_id', request.remote_user)
         current_app.logger.info(
             'Deleting playbook %s for group %s by user %s. '
             'Request id: %s' % (

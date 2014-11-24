@@ -18,12 +18,15 @@ Default group to environment callables.
 
 from flask import current_app, g
 from bson import ObjectId
+from rerest.contextfilter import ContextFilter
 
 
 def environment_allow_all(username, playbook, maplist):  # pragma: no cover
     """
     Helpful when debugging locally. Don't use this in production.
     """
+    ContextFilter.set_field('user_id', username)
+    ContextFilter.set_field('playbook_id', playbook)
     return True
 
 
@@ -31,6 +34,8 @@ def environment_flat_files(username, playbook, maplist):
     """
     Opens a flat file when checking for environments.
     """
+    ContextFilter.set_field('user_id', username)
+    ContextFilter.set_field('playbook_id', playbook)
     try:
         envcfg = current_app.config['ENVIRONMENT_FLAT_FILES']
         groupcfg = current_app.config['GROUP_ENVIRONMENT_MAPPING']

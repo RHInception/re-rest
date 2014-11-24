@@ -22,11 +22,12 @@ import logging
 from flask import Flask, json
 
 from rerest.views import make_routes
-
+from rerest.contextfilter import ContextFilter
 
 CONFIG_FILE = os.environ.get('REREST_CONFIG', 'settings.json')
 
 app = Flask('rerest')
+ContextFilter.set_field('app_component', 'rerest')
 app.config.update(json.load(open(CONFIG_FILE, 'r')))
 
 log_handler = logging.FileHandler(app.config.get('LOGFILE', 'rerest.log'))
@@ -34,8 +35,17 @@ log_level = app.config.get('LOGLEVEL', None)
 if not log_level:
     log_level = 'INFO'
 log_handler.setLevel(logging.getLevelName(log_level))
+
+# ADDITION OF NEW FIELDS:
+#
+# If you add new fields to the logging format string you must add them
+# to the rerest.contextfilter.ContextFilter class's 'FIELDS' variable
+# as well. Failure to do so will result in KeyError's during logging
+
 log_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    '%(asctime)s - app_component="%(app_component)s" - source_ip="%(source_ip)s" - log_level="%(levelname)s" - playbook_id="%(playbook_id)s" - deployment_id="%(deployment_id)s" - user_id="%(user_id)s" - message="%(message)s"'))
+context_filter = ContextFilter()
+app.logger.addFilter(context_filter)
 app.logger.handlers = [log_handler]
 app.logger.debug('Logger initialized')
 app.logger.info('Using config from %s' % CONFIG_FILE)

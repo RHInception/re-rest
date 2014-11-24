@@ -19,6 +19,7 @@ import uuid
 import urllib
 
 from flask import current_app, request, jsonify, g
+from rerest.contextfilter import ContextFilter
 
 
 def remote_user_required(f):
@@ -29,6 +30,7 @@ def remote_user_required(f):
     def decorator(*args, **kwargs):
         if not request.remote_user:
             return jsonify({'status': 'error', 'message': 'unauthorized'}), 401
+            ContextFilter.set_field('user_id', request.remote_user)
         return f(*args, **kwargs)
     return decorator
 
@@ -43,6 +45,7 @@ def check_group(f):
         mod, meth = current_app.config['AUTHORIZATION_CALLABLE'].split(':')
         check_auth = getattr(__import__(mod, fromlist=['True']), meth)
 
+        ContextFilter.set_field('user_id', request.remote_user)
         if check_auth(request.remote_user, request.view_args)[0]:
             current_app.logger.debug(
                 'User %s successfully authenticated for %s' % (
@@ -68,6 +71,7 @@ def check_environment_and_group(f):
 
         auth_check = check_auth(request.remote_user, request.view_args)
         if auth_check[0]:
+            ContextFilter.set_field('user_id', request.remote_user)
             current_app.logger.debug(
                 'User %s successfully authenticated for %s' % (
                     request.remote_user, request.path))
