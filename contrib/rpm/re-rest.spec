@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 2
+%global _short_release 3
 
 Name:           re-rest
 Version:        0.0.10
@@ -56,6 +56,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Mon Nov 24 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.10-3
+- Fix indentation of context field addition
+
 * Mon Nov 24 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.10-2
 - Now with timezone offset in log message
 
