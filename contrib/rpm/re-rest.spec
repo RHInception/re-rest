@@ -8,7 +8,7 @@
 %global _short_release 1
 
 Name:           re-rest
-Version:        0.0.9
+Version:        0.0.10
 Release:        %{_short_release}%{?dist}
 Summary:        Simple REST Api for release automation
 
@@ -55,8 +55,14 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Mon Nov 24 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.10-1
+- Field data for logging purposes is accumulated via new logging ContextFilter
+
 * Wed Nov  5 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.9-1
 - Enable SSL/TLS for AMQP connections
+
+* Thu Oct 30 2014 Ryan Cook <rcook@redhat.com> - 0.0.8-1
+- Allow for the use of true/false for SSL
 
 * Tue Sep 16 2014 Steve Milner <stevem@gnulinux.net> - 0.0.7-1
 - Environment based authorization now available.
