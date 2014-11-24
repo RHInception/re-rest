@@ -96,7 +96,7 @@ class ContextFilter(logging.Filter):
     def set_field(cls, k, v):
         cls.my_fields[k] = v
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     levels = (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL)
     logging.basicConfig(level=logging.DEBUG,
                         format='%(date_string)s - app_component="%(app_component)s" - source_ip="%(source_ip)s" - log_level="%(levelname)s" - playbook_id="%(playbook_id)s" - deployment_id="%(deployment_id)s" - user_id="%(user_id)s" - message="%(message)s"')
