@@ -17,6 +17,8 @@ Accumulating logger filter which remembers contextual information
 about a users request.
 """
 import logging
+import datetime
+import pytz
 
 
 class ContextFilter(logging.Filter):
@@ -34,7 +36,7 @@ class ContextFilter(logging.Filter):
     receiving the deployment id, it can not log this information. The
     record would appear as such:
 
-    > 2014-11-23 21:09:10,193 - app_component="rerest" - source_ip="127.0.0.1" - log_level="INFO" - playbook_id="542423e102b67c000f941dcb" - deployment_id="" - user_id="justabro" - message="Listening for response on temp queue amq.gen-k5e..."
+    > 2014-11-23 21:09:10,193 +1030 - app_component="rerest" - source_ip="127.0.0.1" - log_level="INFO" - playbook_id="542423e102b67c000f941dcb" - deployment_id="" - user_id="justabro" - message="Listening for response on temp queue amq.gen-k5e..."
 
     Note how the 'deployment_id' field is missing a value.
 
@@ -60,7 +62,7 @@ class ContextFilter(logging.Filter):
     If 'abcdefg123456' were the deployment id then the log record
     produced by the debug statement (above) would appear as such:
 
-    > 2014-11-23 21:09:10,732 - app_component="rerest" - source_ip="127.0.0.1" - log_level="INFO" - playbook_id="542423e102b67c000f941dcb" - deployment_id="abcdefg123456" - user_id="justabro" - message="Confirmation id received for request id abcdefg123456"
+    > 2014-11-23 21:09:10,732 +1030 - app_component="rerest" - source_ip="127.0.0.1" - log_level="INFO" - playbook_id="542423e102b67c000f941dcb" - deployment_id="abcdefg123456" - user_id="justabro" - message="Confirmation id received for request id abcdefg123456"
 
     Note how the 'deployment_id' field is automatically filled in.
 
@@ -78,6 +80,11 @@ class ContextFilter(logging.Filter):
     FIELDS = ['playbook_id', 'deployment_id', 'app_component', 'user_id', 'source_ip']
 
     def filter(self, record):
+        # We don't use the built-in %(asctime)s formatter because it
+        # will omit the TZ offset.
+
+        record.date_string = pytz.UTC.localize(datetime.datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S.%f %z')
+
         for f in self.FIELDS:
             value = self.my_fields.get(f, '')
             setattr(record, f, value)
@@ -92,7 +99,7 @@ class ContextFilter(logging.Filter):
 if __name__ == '__main__':
     levels = (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL)
     logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s - app_component="%(app_component)s" - source_ip="%(source_ip)s" - log_level="%(levelname)s" - playbook_id="%(playbook_id)s" - deployment_id="%(deployment_id)s" - user_id="%(user_id)s" - message="%(message)s"')
+                        format='%(date_string)s - app_component="%(app_component)s" - source_ip="%(source_ip)s" - log_level="%(levelname)s" - playbook_id="%(playbook_id)s" - deployment_id="%(deployment_id)s" - user_id="%(user_id)s" - message="%(message)s"')
 
     ContextFilter.set_field('app_component', 'rerest')
     a2 = logging.getLogger('d.e.f')

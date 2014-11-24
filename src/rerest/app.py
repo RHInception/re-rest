@@ -43,7 +43,7 @@ log_handler.setLevel(logging.getLevelName(log_level))
 # as well. Failure to do so will result in KeyError's during logging
 
 log_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - app_component="%(app_component)s" - source_ip="%(source_ip)s" - log_level="%(levelname)s" - playbook_id="%(playbook_id)s" - deployment_id="%(deployment_id)s" - user_id="%(user_id)s" - message="%(message)s"'))
+    '%(date_string)s - app_component="%(app_component)s" - source_ip="%(source_ip)s" - log_level="%(levelname)s" - playbook_id="%(playbook_id)s" - deployment_id="%(deployment_id)s" - user_id="%(user_id)s" - message="%(message)s"'))
 context_filter = ContextFilter()
 app.logger.addFilter(context_filter)
 app.logger.handlers = [log_handler]
