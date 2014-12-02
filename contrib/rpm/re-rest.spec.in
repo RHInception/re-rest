@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 3
+%global _short_release 4
 
 Name:           re-rest
 Version:        %VERSION%
@@ -56,6 +56,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Tue Dec  2 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.10-4
+- Pass along extra information to the FSM when creating jobs (for logging)
+
 * Mon Nov 24 2014 Tim Bielawa <tbielawa@redhat.com> - 0.0.10-3
 - Fix indentation of context field addition
 

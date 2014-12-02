@@ -156,6 +156,8 @@ use the supplied port.
             msg = {
                 'group': group,
                 'playbook_id': playbook_id,
+                'source_ip': ContextFilter.my_fields.get('source_ip', ''),
+                'user_id': ContextFilter.my_fields.get('user_id', '')
             }
 
             if dynamic and type(dynamic) is dict:

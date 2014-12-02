@@ -66,7 +66,7 @@ class TestJobCreator(TestCase):
         assert jc._channel.basic_publish.call_args[0][0] == 're'
         assert jc._channel.basic_publish.call_args[0][1] == 'job.create'
         assert json.loads(jc._channel.basic_publish.call_args[0][2]) == (
-            {"playbook_id": "12345", "group": "group"})
+            {"playbook_id": "12345", "group": "group", "source_ip": '', "user_id": 'username'})
 
     def test_get_confirmation(self):
         """
