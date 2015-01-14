@@ -1,33 +1,28 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "id": "http://jsonschema.net#",
     "type": "object",
     "additionalProperties": false,
+    "title": "Playbook syntax definition",
+    "description": "Playbooks are documents which describe the exact set of steps required to successfully start and finish a given software release. When the Release Engine begins a deployment, the actions it takes come directly from playbooks. For more information: http://release-engine.readthedocs.org/en/latest/playbooks.html",
 
     "definitions": {
         "group": {
-            "id": "#group",
             "type": "string"
         },
         "name": {
-            "id": "#name",
             "type": "string"
         },
         "description": {
-            "id": "#description",
             "type": "string"
         },
         "hosts": {
-            "id": "#hosts",
             "type": "array",
             "minItems": 1,
             "items": {
-                "id": "#0",
                 "type": "string"
             }
         },
         "steps": {
-            "id": "#steps",
             "type": "array",
             "minItems": 1,
             "items": {"$ref": "#/definitions/step_types"}
@@ -40,20 +35,27 @@
         },
         "step_string": {
             "type": "string",
-            "pattern": "^[\\w]+:{1}[\\w]+$"
+            "pattern": "^[\\w]+:{1}[A-Z][\\w]+$"
         },
         "step_object": {
             "type": "object",
             "patternProperties": {
-                "^[\\w]+:{1}[\\w]+$": {
+                "^[\\w]+:{1}[A-Z][\\w]+$": {
                     "type": "object",
-		    "properties": {
-			"notify": {"$ref": "#/definitions/notify"}
-		    },
-		    "minProperties": 1
+                    "properties": {
+                        "notify": {"$ref": "#/definitions/notify"}
+                    },
+                    "minProperties": 1
                 }
             },
-	    "additionalProperties": false
+            "additionalProperties": false
+        },
+        "dynamic": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minItems": 1
+            }
         },
         "notify": {
             "type": "object",
@@ -67,11 +69,13 @@
         "notify_endpoints": {
             "type": "object",
             "additionalProperties": {
-		"type": "array"
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "execution": {
-            "id": "#execution",
             "type": "array",
             "items": {
                 "type": "object",
