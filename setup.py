@@ -34,7 +34,7 @@ reqs = parse_requirements('requirements.txt')
 
 setup(
     name='rerest',
-    version='0.0.10-5',
+    version='0.0.11-1',
     description="REST entrypoint to the core component of the Inception Release Engine",
     author='See AUTHORS',
     author_email='inception@redhat.com',

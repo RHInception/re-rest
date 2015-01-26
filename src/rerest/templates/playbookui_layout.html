@@ -2,14 +2,14 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Release Engine - {{ title }}</title>
+    <title>Release Engine - Playbooks: {{ group }}</title>
     <style type="text/css">
       tr.codeblock {
           display: none;
       }
     </style>
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
     {# <link href="{{ url_for('static', filename = 'google-code-prettify/prettify.css') }}" rel="stylesheet" /> #}
     <link href="{{ url_for('static', filename = 'prism.css') }}" rel="stylesheet" />
     <link href="{{ url_for('static', filename = 'prism-show-language.css') }}" rel="stylesheet" />
@@ -17,11 +17,11 @@
   <body>
     <div class="container-fluid">
       <div class="page-header">
-        <h1>{{ title }}</h1>
+        <h1>{{ title }} {{ group }}</h1>
       </div>
       <div class="row">
         <div class="col-md-8">
-          <table class="table table-condensed table-hover">
+          <table id="playbooks" class="table table-condensed table-hover">
             <tbody>
               <tr>
                 <th><img src="{{ url_for('static', filename = 'blank.gif') }}" alt="[ICO]" /></th>
@@ -42,42 +42,6 @@
                   <a href="..">Parent Directory</a>
                 </td>
               </tr>
-              {% for playbook in playbooks %}
-                <tr>
-                  <td>
-                    <a href="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'json') }}" id="{{ playbook['_id'] }}-download-json"><span class="label label-info">JSON</span></a>
-                    <a href="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'yaml') }}" id="{{ playbook['_id'] }}-download-yaml"><span class="label label-info">YAML</span></a>
-                  </td>
-                  <td name="{{ playbook['_id'] }}-uploaded-by">
-                    someuser
-                  </td>
-                  <td name="{{ playbook['_id'] }}-uploaded-on">
-                    2014-09-09
-                  </td>
-                  <td name="{{ playbook['_id'] }}-modified-on">
-                    2014-09-09
-                  </td>
-                  <td name="{{ playbook['_id'] }}-description">
-                    {{ playbook['name'] }}
-                  </td>
-                  <td align="center" id="{{ playbook['_id'] }}">
-                    <span class="show-playbook-button glyphicon glyphicon glyphicon-chevron-down"></span>
-                  </td>
-                </tr>
-                <tr class="codeblock" id="{{ playbook['_id'] }}-row">
-                  <td colspan="6">
-                    <div class="row">
-                      <div class="col-md-6">
-                        <pre class="language-json code-block"><code class="language-json" data-language="json" id="{{ playbook['_id'] }}-code-json"></code></pre>
-			{# <pre data-src="{{ url_for('playbook_group_playbook', group = group, pbid = playbook['_id'], ext = 'yaml') }}" id="{{ playbook['_id'] }}-code-json"></pre>  #}
-                     </div>
-                      <div class="col-md-6">
-                        <pre class="language-yaml code-block"><code class="language-yaml" data-language="yaml"  id="{{ playbook['_id'] }}-code-yaml"></code></pre>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -86,17 +50,38 @@
         <hr />
         <address><a href="http://release-engine.readthedocs.org/en/latest/">Release Engine</a>/<a href="https://github.com/RHInception/re-rest">re-rest</a></address>
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script src="{{ url_for('static', filename = 'rerest-index.js') }}"></script>
         <!-- Optional theme -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css" />
         <!-- Latest compiled and minified JavaScript -->
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
         <!-- Code highlighting -->
         <script src="{{ url_for('static', filename = 'prism.js') }}"></script>
         <script src="{{ url_for('static', filename = 'prism-yaml.js') }}"></script>
         {# <script src="{{ url_for('static', filename = 'google-code-prettify/prettify.js') }}"></script> #}
         {# <script src="{{ url_for('static', filename = 'google-code-prettify/lang-yaml.js') }}"></script> #}
+        <script>
+            function show_code(pbid) {
+               // table row with the code box we're filling in it
+                var code_display_row = $('#' + pbid + '-row');
+                // get the target from the element with the code URL
+                var dl_url_json = '/api/v0/{{ group }}/playbook/' + pbid + '?format=json';
+                var dl_url_yaml = '/api/v0/{{ group }}/playbook/' + pbid + '?format=yaml';
+
+                // load the code, then add a callback to slide-down the box
+                $('#' + pbid + '-code-json').load(dl_url_json, function() {
+                    $('#' + pbid + '-code-yaml').load(dl_url_yaml, function() {});
+                });
+            }
+
+            $.getJSON('/api/v0/{{ group }}/playbook/', function (data) {
+                var playbooks = $('#playbooks');
+                $.each(data['items'], function(k, v) {
+                    playbooks.append('<tr><td><a href=\"/api/v0/{{ group }}/playbook/'+v['id']+'?format=json\" id=\"'+v['id']+'-download-json\"><span class=\"label label-info\">JSON</span></a><a href=\"/api/v0/{{ group }}/playbook/'+v['id']+'?format=yaml\" id=\"'+v['id']+'-download-yaml\"><span class=\"label label-info\">YAML</span></a></td><td>someuser</td><td>date</td><td>mdate</td><td>'+v['name']+'</td><td align=\"center\" id=\"'+v['id']+'\"><A href=\"#\" onClick=\"chev()\" id=\"'+v['id']+'\"><span class=\"show-playbook-button glyphicon glyphicon glyphicon-chevron-down\"></span></a></td></tr><tr class=\"codeblock\" id=\"'+v['id']+'-row\"><td colspan=\"6\"><div class=\"row\"><div class=\"col-md-6\"><pre class=\"language-json code-block\"><code class=\"language-json\" data-language=\"json\" id=\"'+v['id']+'-code-json\"></code></pre><pre data-src=\"\" id=\"'+v['id']+'-code-json\"></pre></div><div class=\"col-md-6\"><pre class=\"language-yaml code-block\"><code class=\"language-yaml\" data-language=\"yaml\"  id=\"'+v['id']+'-code-yaml\"></code></pre></div></div></td></tr>');
+                });
+            });
+        </script>
       </div>
     </div>
   </body>

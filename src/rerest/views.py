@@ -267,6 +267,39 @@ class V0PlaybookAPI(MethodView):
         return jsonify({'status': 'not found'}), 404
 
 
+class V0GroupsAPI(MethodView):
+
+    methods = ['GET']
+    #: Decorators to be applied to all API methods in this class.
+    decorators = [
+        remote_user_required, check_group, require_database, inject_request_id]
+
+    def get(self):
+        """
+        Gets a list of groups and returns it to the requestor.
+        """
+        # Serializer so we can handle json and yaml
+        serializer = serialize.Serialize(request.args.get(
+            'format', 'json'))
+
+        # List playbooks
+        ContextFilter.set_field('user_id', request.remote_user)
+        current_app.logger.info(
+            'User %s is listing known groups. Request id: %s' % (
+                request.remote_user, request.request_id))
+
+        groups = g.db.re.playbooks.distinct('group')
+        items = []
+        for group in groups:
+            count = g.db.re.playbooks.find({'group': group}).count()
+            items.append({'name': group, 'count': int(count)})
+        # This must be a Response since it can be YAML or JSON.
+        return Response(
+            response=serializer.dump({'status': 'ok', 'items': items}),
+            status=200,
+            mimetype=serializer.mimetype)
+
+
 # NOTE: The following are OFF by default and not considered ready for use
 #       due to no unittesting.
 class PlaybookIndex(MethodView):  # pragma: no cover
@@ -274,46 +307,16 @@ class PlaybookIndex(MethodView):  # pragma: no cover
     methods = ['GET']
     #: Decorators to be applied to all API methods in this class.
     decorators = [
-        require_database, inject_request_id]
+        remote_user_required, require_database, inject_request_id]
 
     def get(self, group=None, pbid=None):
         """new: return a directory index links to sub-directories holding
         playbooks. sorted by group.
 
         """
-        groups = []
-        for group in g.db.re.playbooks.distinct('group'):
-            _count = g.db.re.playbooks.find({'group': group}).count()
-            groups.append([group, _count])
-
-        try:
-            return render_template('layout_index.html',
-                                   title="Playbook Index",
-                                   groups=groups)
-        except TemplateNotFound, e:
-            print "##########################################"
-            print e
-            print "##########################################"
-            return Response(
-                response="Playbook not found.",
-                status=404)
-
-        # # One playbook
-        # playbook = g.db.re.playbooks.find_one({
-        #     "_id": ObjectId(id), "group": str(group)})
-
-        # if playbook is None:
-        #     return jsonify({'status': 'not found'}), 404
-        # current_app.logger.debug(
-        #     'Listing known playbook %s for group %s. '
-        #     'Request id: %s' % (
-        #         id, group, request.request_id))
-
-        # del playbook["_id"]
-        # return Response(
-        #     response=serializer.dump({'status': 'ok', 'item': playbook}),
-        #     status=200,
-        #     mimetype=serializer.mimetype)
+        return render_template(
+            'playbookui_index.html',
+            title="Playbook Index")
 
 
 class PlaybookGroupIndex(MethodView):  # pragma: no cover
@@ -321,63 +324,20 @@ class PlaybookGroupIndex(MethodView):  # pragma: no cover
     methods = ['GET']
     #: Decorators to be applied to all API methods in this class.
     decorators = [
-        require_database, inject_request_id]
+        remote_user_required, require_database, inject_request_id]
 
-    def get(self, group=None):
+    def get(self, group):
         """return a directory index of playbooks for the given <group>
         """
-        playbooks = []
-        for pb in g.db.re.playbooks.find({'group': group}):
-            playbooks.append(pb)
-
         try:
-            return render_template('layout_playbooks.html',
-                                   title="%s's Playbooks" % group,
-                                   group=group,
-                                   playbooks=playbooks)
-        except TemplateNotFound, e:
-            print "##########################################"
-            print e
-            print "##########################################"
+            group = g.db.re.playbooks.find_one({'group': group})
+            return render_template(
+                'playbookui_layout.html',
+                title="Playbooks",
+                group=group['group'])
+        except Exception, e:
             return Response(
-                response="Playbook not found.",
-                status=404)
-
-
-class PlaybookGroupPlaybook(MethodView):  # pragma: no cover
-    # print request.args.get('fmt')
-    methods = ['GET']
-    #: Decorators to be applied to all API methods in this class.
-    decorators = [
-        require_database, inject_request_id]
-
-    def get(self, group=None, pbid=None, ext=None):
-        """
-        return the requested playbook, either as json or yaml
-        """
-        pb = g.db.re.playbooks.find_one({'_id': ObjectId(pbid)}, {'_id': 0})
-        try:
-            if ext == 'json':
-                return Response(
-                    response=json.dumps(pb, indent=4),
-                    status=200,
-                    mimetype='text/plain')
-
-            elif ext == 'yaml':
-                # Get rid of the unicode stuff so YAML dumper can handle it...
-                _pb = json.dumps(pb, default=_decode_dict)
-                return Response(
-                    response=yaml.dump(json.loads(
-                        _pb, object_hook=_decode_dict)),
-                    status=200,
-                    mimetype='text/plain')
-
-        except TemplateNotFound, e:
-            print "##########################################"
-            print e
-            print "##########################################"
-            return Response(
-                response="Playbook not found.",
+                response="No groups found.",
                 status=404)
 
 
@@ -417,15 +377,15 @@ def make_routes(app):
     Makes and appends routes to app.
     """
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
+    groups_api_view = V0GroupsAPI.as_view('groups_api_view')
     playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
-    playbook_index_view = PlaybookIndex.as_view('playbook_index')
-    playbook_group_index_view = PlaybookGroupIndex.as_view(
-        'playbook_group_index')
-    playbook_group_playbook_view = PlaybookGroupPlaybook.as_view(
-        'playbook_group_playbook')
 
     app.add_url_rule('/api/v0/<group>/playbook/<id>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
+
+    app.add_url_rule('/api/v0/groups/',
+                     view_func=groups_api_view, methods=[
+                         'GET'])
 
     app.add_url_rule('/api/v0/playbooks/',
                      view_func=playbook_api_view, methods=[
@@ -442,16 +402,16 @@ def make_routes(app):
     ##################################################################
     # Views for the web index
     if app.config.get('PLAYBOOK_UI', False):
+        playbook_index_view = PlaybookIndex.as_view('playbook_index')
+        playbook_group_index_view = PlaybookGroupIndex.as_view(
+            'playbook_group_index')
+
         app.add_url_rule('/',
                          view_func=playbook_index_view, methods=[
                              'GET'])
 
         app.add_url_rule('/<group>/',
                          view_func=playbook_group_index_view, methods=[
-                             'GET'])
-
-        app.add_url_rule('/<group>/playbook/<pbid>.<ext>',
-                         view_func=playbook_group_playbook_view, methods=[
                              'GET'])
 
     app.logger.info('Added v0 routes.')
