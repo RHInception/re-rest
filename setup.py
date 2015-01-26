@@ -34,7 +34,7 @@ reqs = parse_requirements('requirements.txt')
 
 setup(
     name='rerest',
-    version='0.0.11-2',
+    version='0.0.11-3',
     description="REST entrypoint to the core component of the Inception Release Engine",
     author='See AUTHORS',
     author_email='inception@redhat.com',
@@ -44,7 +44,8 @@ setup(
     package_dir={
         'rerest': os.path.join('src', 'rerest')
     },
-    package_data={'rerest': ['templates/*.html']},
+    package_data={
+        'rerest': ['templates/*.html', 'static/*']},
     install_requires=reqs,
     packages=find_packages('src'),
     classifiers=[

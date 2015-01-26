@@ -44,7 +44,8 @@ setup(
     package_dir={
         'rerest': os.path.join('src', 'rerest')
     },
-    package_data={'rerest': ['templates/*.html']},
+    package_data={
+        'rerest': ['templates/*.html', 'static/*']},
     install_requires=reqs,
     packages=find_packages('src'),
     classifiers=[
