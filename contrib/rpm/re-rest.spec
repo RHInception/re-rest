@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 3
+%global _short_release 4
 
 Name:           re-rest
 Version:        0.0.11
@@ -56,6 +56,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Mon Jan 26 2015 Steve Milner <stevem@gnulinux.net> - 0.0.11-4
+- All groups can be listed, but attempting to access the data in them is restricted.
+
 * Mon Jan 26 2015 Steve Milner <stevem@gnulinux.net> - 0.0.11-3
 - Static files now packaged.
 

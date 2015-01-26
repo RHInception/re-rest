@@ -272,7 +272,7 @@ class V0GroupsAPI(MethodView):
     methods = ['GET']
     #: Decorators to be applied to all API methods in this class.
     decorators = [
-        remote_user_required, check_group, require_database, inject_request_id]
+        remote_user_required, require_database, inject_request_id]
 
     def get(self):
         """
