@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 1
+%global _short_release 2
 
 Name:           re-rest
 Version:        0.0.11
@@ -56,6 +56,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Mon Jan 26 2015 Steve Milner <stevem@gnulinux.net> - 0.0.11-2
+- Template files now packaged.
+
 * Fri Jan 23 2015 Steve Milner <stevem@gnulinux.net> - 0.0.11-1
 - Added groups endpoint for api.
 - Playbook UI now uses api where possible.
