@@ -5,10 +5,10 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 4
+%global _short_release 5
 
 Name:           re-rest
-Version:        0.0.11
+Version:        0.0.12
 Release:        %{_short_release}%{?dist}
 Summary:        Simple REST Api for release automation
 
@@ -56,6 +56,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Tue Feb  3 2015 Tim Bielawa <tbielawa@redhat.com> - 0.0.11-5
+- Now with deployment status endpoint
+
 * Mon Jan 26 2015 Steve Milner <stevem@gnulinux.net> - 0.0.11-4
 - All groups can be listed, but attempting to access the data in them is restricted.
 

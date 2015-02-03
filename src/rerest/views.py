@@ -19,6 +19,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from flask import (
     current_app, jsonify, json, request, g, Response, render_template)
+from datetime import datetime as dt
 
 from flask.views import MethodView
 
@@ -31,6 +32,99 @@ from rerest.validators import validate_playbook, ValidationError
 from jinja2 import TemplateNotFound
 
 import yaml
+
+
+class V0StatusAPI(MethodView):
+    """Inspect the status of a deployment"""
+
+    methods = ['GET']
+
+    #: Decorators to be applied to all API methods in this class.
+    decorators = [
+        remote_user_required,
+        inject_request_id,
+        require_database
+    ]
+
+    def get(self, dpid):
+        """Get the status of a deployment with a state id of ``dpid``."""
+        filter = {
+            '_id': ObjectId(str(dpid))
+        }
+        # Limit fields returned just to:
+        projection = {
+            "created": 1,
+            "ended": 1,
+            "failed": 1,
+            "active_step": 1,
+            "failed_step": 1,
+            '_id': 0
+        }
+        record = g.db.re.state.find_one(
+            filter,
+            projection
+        )
+
+        ContextFilter.set_field('deployment_id', str(dpid))
+
+        if record is None:
+            # 404: "no such deployment" - the deployment requested does not exist
+            response = {
+                "status": "not found",
+                "deployment": dpid
+            }
+            status_code = 404
+            current_app.logger.info("Deployment status: Not found")
+        else:
+            # 200: "completed" - the deployment requested exists and
+            # finished successfully failed = False AND ended is not
+            # None
+            if ((record['failed'] is not None) and
+                    (record['failed'] is not True) and
+                    (record['ended'] is not None)):
+                duration = record['ended'] - record['created']
+                response = {
+                    "created": record['created'],
+                    "deployment": dpid,
+                    "duration": int(duration.total_seconds()),
+                    "ended": record['ended'],
+                    "status": "completed",
+                }
+                status_code = 200
+                current_app.logger.info("Deployment status: Completed without error")
+
+            # 202: "currently running step frob:Nicate" - the
+            # deployment requested exists, but is still being
+            # processed ended is not None
+            elif record['ended'] is None:
+                duration = dt.utcnow() - record['created']
+                response = {
+                    "active_step": record['active_step'],
+                    "created": record['created'],
+                    "deployment": dpid,
+                    "duration": int(duration.total_seconds()),
+                    "status": "in progress",
+                }
+                status_code = 202
+                current_app.logger.info("Deployment status: In progress")
+
+            # 400: "failed" - the deployment requested exists but
+            # finished with errors
+            elif ((record['failed'] is True) and
+                  (record['ended'] is not None)):
+                duration = record['ended'] - record['created']
+                response = {
+                    "created": record['created'],
+                    "deployment": dpid,
+                    "duration": int(duration.total_seconds()),
+                    "ended": record['ended'],
+                    "failed_step": record['failed_step'],
+                    "status": "failed",
+                }
+                status_code = 400
+                current_app.logger.info("Deployment status: Failed")
+
+        return jsonify(response), status_code
 
 
 class V0DeploymentAPI(MethodView):
@@ -137,10 +231,11 @@ class V0PlaybookAPI(MethodView):
                 'Request id: %s' % (
                     request.remote_user, group, request.request_id))
 
+            # Sort by most recently added first
             if group is None:
-                playbooks = g.db.re.playbooks.find()
+                playbooks = g.db.re.playbooks.find().sort([('_id', -1)])
             else:
-                playbooks = g.db.re.playbooks.find({"group": str(group)})
+                playbooks = g.db.re.playbooks.find({"group": str(group)}).sort([('_id', -1)])
             items = []
             for item in playbooks:
                 item["id"] = str(item["_id"])
@@ -377,8 +472,12 @@ def make_routes(app):
     Makes and appends routes to app.
     """
     deployment_api_view = V0DeploymentAPI.as_view('deployment_api_view')
+    status_api_view = V0StatusAPI.as_view('status_api_view')
     groups_api_view = V0GroupsAPI.as_view('groups_api_view')
     playbook_api_view = V0PlaybookAPI.as_view('playbook_api_view')
+
+    app.add_url_rule('/api/v0/deployment/status/<dpid>/',
+                     view_func=status_api_view, methods=['GET'])
 
     app.add_url_rule('/api/v0/<group>/playbook/<id>/deployment/',
                      view_func=deployment_api_view, methods=['PUT', ])
