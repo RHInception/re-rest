@@ -5,7 +5,7 @@
 %endif
 
 %global _short_name rerest
-%global _short_release 5
+%global _short_release 6
 
 Name:           re-rest
 Version:        %VERSION%
@@ -56,6 +56,9 @@ cp -rf src/rerest/data $RPM_BUILD_ROOT/%{python2_sitelib}/rerest/
 
 
 %changelog
+* Mon Feb  9 2015 Tim Bielawa <tbielawa@redhat.com> - 0.0.12-6
+- Fix pep8
+
 * Tue Feb  3 2015 Tim Bielawa <tbielawa@redhat.com> - 0.0.11-5
 - Now with deployment status endpoint
 

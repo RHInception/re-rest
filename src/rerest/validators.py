@@ -45,5 +45,6 @@ with open(playbook_schema_file, 'r') as f:
 }
 '''
 
-#: validated that a playbook meets the expected schema
-validate_playbook = lambda pb: validate(pb, PLAYBOOK_SCHEMA)
+
+def validate_playbook(pb, pb_schema=PLAYBOOK_SCHEMA):
+    return validate(pb, pb_schema)
